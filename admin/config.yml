@@ -3,7 +3,7 @@
 
 backend:
   name: github
-  repo: pahnvee/ong-nuestros-origenes
+  repo: lautaropps2/ong-nuestros-origenes
   branch: main
   base_url: https://ong-nuestros-origenes.vercel.app   # cambiar por el dominio .cl cuando funcione
   auth_endpoint: api/auth                  # login con GitHub (carpeta /api)
