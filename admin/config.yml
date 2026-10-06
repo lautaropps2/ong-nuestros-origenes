@@ -1,11 +1,11 @@
 # Panel de administración (Decap CMS) — ONG Nuestros Orígenes
-# Antes de publicar, cambia las líneas marcadas con  <-- CAMBIAR
+# Cuando el dominio .cl funcione, reemplaza https://ong-nuestros-origenes.vercel.app por él (3 líneas)
 
 backend:
   name: github
-  repo: TU-USUARIO/ong-nuestros-origenes   # <-- CAMBIAR: usuario/repositorio de GitHub
+  repo: pahnvee/ong-nuestros-origenes
   branch: main
-  base_url: https://www.tudominio.cl       # <-- CAMBIAR: la dirección desde donde se abre /admin
+  base_url: https://ong-nuestros-origenes.vercel.app   # cambiar por el dominio .cl cuando funcione
   auth_endpoint: api/auth                  # login con GitHub (carpeta /api)
   commit_messages:
     update: "Panel: actualiza {{collection}}"
@@ -13,8 +13,8 @@ backend:
     deleteMedia: "Panel: borra {{path}}"
 
 locale: es
-site_url: https://www.tudominio.cl         # <-- CAMBIAR: misma dirección de arriba
-display_url: https://www.tudominio.cl
+site_url: https://ong-nuestros-origenes.vercel.app
+display_url: https://ong-nuestros-origenes.vercel.app
 logo_url: ../assets/logo-panel.svg
 
 # Todas las fotos que se suben desde el panel quedan aquí (ruta relativa, sin "/" inicial)
