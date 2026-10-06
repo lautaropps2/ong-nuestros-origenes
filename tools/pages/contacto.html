@@ -1,0 +1,42 @@
+<section class="phero pat" aria-labelledby="page-t">
+  <div class="wrap">
+    <nav class="crumbs" aria-label="Ruta"><a href="index.html">Inicio</a><span aria-hidden="true">/</span><span aria-current="page">Contacto</span></nav>
+    <h1 id="page-t"><span>Contáctanos</span></h1>
+    <p>¿Necesitas orientación, quieres colaborar o hacer un pedido del bazar? Escríbenos, te respondemos por WhatsApp.</p>
+  </div>
+</section>
+<div class="stripe" aria-hidden="true"><span></span><span></span><span></span><span></span></div>
+
+<section class="sec" aria-label="Canales de contacto">
+  <div class="wrap contact">
+    <div class="rv">
+      <a class="wacard" href="{WA}" target="_blank" rel="noopener">
+        <span class="wabadge"><svg aria-hidden="true"><use href="#wa"/></svg></span>
+        <span><small>WhatsApp</small><b>+56 9 2617 5941</b></span>
+      </a>
+      <div class="crows">
+        <a href="mailto:{MAIL}"><svg aria-hidden="true"><use href="#i-mail"/></svg><div><small>Correo</small><span>{MAIL}</span></div></a>
+        <a href="{IG}" target="_blank" rel="noopener"><svg aria-hidden="true"><use href="#i-ig"/></svg><div><small>Instagram</small><span>@nuestrosorigenesong</span></div></a>
+        <a href="{MAPS}" target="_blank" rel="noopener"><svg aria-hidden="true"><use href="#i-pin"/></svg><div><small>Dirección</small><span>Calle Jorge Rivera #967, Rancagua</span></div></a>
+      </div>
+    </div>
+
+    <form class="form rv" id="waForm" style="--d:.12s" novalidate>
+      <h2>Escríbenos</h2>
+      <p>Completa el mensaje y se abrirá WhatsApp con el texto listo para enviar.</p>
+      <div class="field"><label for="f-nombre">Nombre</label><input id="f-nombre" name="nombre" type="text" autocomplete="name"></div>
+      <div class="field"><label for="f-motivo">Motivo</label>
+        <select id="f-motivo" name="motivo">
+          <option>Orientación</option>
+          <option>Quiero colaborar</option>
+          <option>Pedido del bazar</option>
+          <option>Reunión de socios</option>
+          <option>Otro</option>
+        </select>
+      </div>
+      <div class="field"><label for="f-msg">Mensaje</label><textarea id="f-msg" name="mensaje" required></textarea></div>
+      <p class="form__msg" role="status" aria-live="polite"></p>
+      <button class="btn btn--wa" type="submit"><svg aria-hidden="true"><use href="#wa"/></svg>Enviar por WhatsApp</button>
+    </form>
+  </div>
+</section>

@@ -1,0 +1,82 @@
+{
+  "fotos": [
+    {
+      "titulo": "campaña apaga la TV 2012 TITEREDUCA",
+      "anio": 2012,
+      "imagen": "assets/img/galeria/2012-campana-apaga-la-tv-2012-titereduca.jpg",
+      "video": ""
+    },
+    {
+      "titulo": "Curso lengua de señas 2015 Rancagua",
+      "anio": 2015,
+      "imagen": "assets/img/galeria/2015-curso-lengua-de-senas-2015-rancagua.jpg",
+      "video": ""
+    },
+    {
+      "titulo": "Curso lengua de señas 2015 Rancagua2",
+      "anio": 2015,
+      "imagen": "assets/img/galeria/2015-curso-lengua-de-senas-2015-rancagua2.jpg",
+      "video": ""
+    },
+    {
+      "titulo": "RECICLAR SPOT TV en lengua de señas 2015",
+      "anio": 2015,
+      "imagen": "",
+      "video": "assets/img/galeria/2015-reciclar-spot-tv-en-lengua-de-senas-2015.mp4"
+    },
+    {
+      "titulo": "apicultura rapanui 2016",
+      "anio": 2016,
+      "imagen": "assets/img/galeria/2016-apicultura-rapanui-2016.jpg",
+      "video": ""
+    },
+    {
+      "titulo": "Centro de investigacion Apicola RAPANUI 2016",
+      "anio": 2016,
+      "imagen": "assets/img/galeria/2016-centro-de-investigacion-apicola-rapanui-2016.jpg",
+      "video": ""
+    },
+    {
+      "titulo": "Fundacion Kimi mau Ora 2016",
+      "anio": 2016,
+      "imagen": "assets/img/galeria/2016-fundacion-kimi-mau-ora-2016.jpg",
+      "video": ""
+    },
+    {
+      "titulo": "sistema de riego sustentable CONADI 2016",
+      "anio": 2016,
+      "imagen": "assets/img/galeria/2016-sistema-de-riego-sustentable-conadi-2016.jpg",
+      "video": ""
+    },
+    {
+      "titulo": "Proyecto audiovisual INJUV 2017 Rapanui sin drogas",
+      "anio": 2017,
+      "imagen": "assets/img/galeria/2017-proyecto-audiovisual-injuv-2017-rapanui-sin-drogas.jpg",
+      "video": ""
+    },
+    {
+      "titulo": "Aula Magna Universidad Concepcion MAPUCHE 2018",
+      "anio": 2018,
+      "imagen": "assets/img/galeria/2018-aula-magna-universidad-concepcion-mapuche-2018.jpg",
+      "video": ""
+    },
+    {
+      "titulo": "feria navideña 2019 intendencia ANITA CORNEJO",
+      "anio": 2019,
+      "imagen": "assets/img/galeria/2019-feria-navidena-2019-intendencia-anita-cornejo.jpg",
+      "video": ""
+    },
+    {
+      "titulo": "alianza RAEE reciclaje 2024",
+      "anio": 2024,
+      "imagen": "assets/img/galeria/2024-alianza-raee-reciclaje-2024.jpg",
+      "video": ""
+    },
+    {
+      "titulo": "reciclaje RAEE 2026",
+      "anio": 2026,
+      "imagen": "assets/img/galeria/2026-reciclaje-raee-2026.jpg",
+      "video": ""
+    }
+  ]
+}

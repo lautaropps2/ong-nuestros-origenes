@@ -1,0 +1,38 @@
+<section class="phero pat" aria-labelledby="page-t">
+  <div class="wrap">
+    <nav class="crumbs" aria-label="Ruta"><a href="index.html">Inicio</a><span aria-hidden="true">/</span><span aria-current="page">Galería</span></nav>
+    <h1 id="page-t"><span>Galería</span></h1>
+    <p>Nuestra historia en imágenes: una línea de tiempo con las actividades de ONG Nuestros Orígenes<span data-gal-years></span>.</p>
+  </div>
+</section>
+<div class="stripe" aria-hidden="true"><span></span><span></span><span></span><span></span></div>
+
+<!-- Las fotos se cargan desde data/galeria.json (se editan en /admin) -->
+<section class="gal" aria-roledescription="carrusel" aria-label="Línea de tiempo fotográfica" tabindex="-1">
+  <div class="wrap">
+    <div class="gal__stage">
+      <button class="gbtn gprev" type="button" aria-label="Foto anterior"><svg aria-hidden="true"><use href="#i-chev"/></svg></button>
+      <button class="gbtn gnext" type="button" aria-label="Foto siguiente"><svg aria-hidden="true"><use href="#i-chev"/></svg></button>
+      <div class="gal__prog" aria-hidden="true"></div>
+    </div>
+    <div class="gal__bar">
+      <p class="gal__hint">Usa las flechas o toca una foto de la línea de tiempo.</p>
+      <button class="hbtn gpause" type="button" aria-pressed="false" aria-label="Pausar presentación"></button>
+    </div>
+    <ol class="tline" aria-label="Línea de tiempo"></ol>
+    <p class="gal__empty" hidden>No pudimos cargar la galería en este momento. Vuelve a intentarlo en unos minutos.</p>
+    <noscript><p class="gal__empty">Activa JavaScript para ver la galería.</p></noscript>
+  </div>
+</section>
+
+<section class="sec" aria-labelledby="band-t">
+  <div class="wrap">
+    <div class="band pat rv">
+      <div>
+        <h2 id="band-t"><span>Sé</span> <span>parte</span> <span>de la historia</span></h2>
+        <p style="margin-top:1rem">Cada foto es una actividad hecha junto a comunidades, socios y voluntarios. Tu aporte hace posible la siguiente.</p>
+      </div>
+      <div class="btns"><a class="btn" href="apoyanos.html">Apóyanos <svg class="arr" aria-hidden="true"><use href="#i-arr"/></svg></a></div>
+    </div>
+  </div>
+</section>

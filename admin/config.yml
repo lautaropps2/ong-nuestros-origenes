@@ -1,0 +1,101 @@
+# Panel de administración (Decap CMS) — ONG Nuestros Orígenes
+# Antes de publicar, cambia las líneas marcadas con  <-- CAMBIAR
+
+backend:
+  name: github
+  repo: TU-USUARIO/ong-nuestros-origenes   # <-- CAMBIAR: usuario/repositorio de GitHub
+  branch: main
+  base_url: https://www.tudominio.cl       # <-- CAMBIAR: la dirección desde donde se abre /admin
+  auth_endpoint: api/auth                  # login con GitHub (carpeta /api)
+  commit_messages:
+    update: "Panel: actualiza {{collection}}"
+    uploadMedia: "Panel: sube {{path}}"
+    deleteMedia: "Panel: borra {{path}}"
+
+locale: es
+site_url: https://www.tudominio.cl         # <-- CAMBIAR: misma dirección de arriba
+display_url: https://www.tudominio.cl
+logo_url: ../assets/logo-panel.svg
+
+# Todas las fotos que se suben desde el panel quedan aquí (ruta relativa, sin "/" inicial)
+media_folder: "assets/img/subidas"
+public_folder: "assets/img/subidas"
+
+collections:
+  # ---------------------------------------------------------------- EVENTOS
+  - name: "eventos"
+    label: "Eventos"
+    description: "Los eventos que aún no ocurren aparecen en el Inicio como «Próximos eventos». Todos aparecen en la página Noticias."
+    files:
+      - name: "lista"
+        label: "Lista de eventos"
+        file: "data/eventos.json"
+        fields:
+          - label: "Eventos"
+            label_singular: "evento"
+            name: "items"
+            widget: "list"
+            add_to_top: true
+            collapsed: true
+            summary: "{{fields.titulo}}"
+            fields:
+              - label: "Título"
+                name: "titulo"
+                widget: "string"
+              - label: "Fecha y hora"
+                name: "fecha"
+                widget: "datetime"
+                format: "YYYY-MM-DDTHH:mm"
+                date_format: "DD-MM-YYYY"
+                time_format: "HH:mm"
+              - label: "Descripción corta"
+                name: "descripcion"
+                widget: "text"
+                hint: "Dos o tres líneas: qué es, dónde y a qué hora."
+              - label: "Imagen"
+                name: "imagen"
+                widget: "image"
+                required: false
+                choose_url: false
+                hint: "Opcional. Foto JPG o PNG; idealmente de menos de 2 MB."
+
+  # ---------------------------------------------------------------- GALERÍA
+  - name: "galeria"
+    label: "Galería"
+    description: "Fotos de la línea de tiempo. Se ordenan solas por año, de la más antigua a la más reciente."
+    files:
+      - name: "fotos"
+        label: "Fotos de la galería"
+        file: "data/galeria.json"
+        fields:
+          - label: "Fotos"
+            label_singular: "foto"
+            name: "fotos"
+            widget: "list"
+            add_to_top: true
+            collapsed: true
+            summary: "{{fields.anio}} · {{fields.titulo}}"
+            fields:
+              - label: "Foto"
+                name: "imagen"
+                widget: "image"
+                required: false
+                choose_url: false
+                hint: "Sube la foto aquí (JPG o PNG, idealmente de menos de 2 MB)."
+              - label: "Título"
+                name: "titulo"
+                widget: "string"
+                hint: "Ejemplo: Feria navideña en la Intendencia"
+              - label: "Año"
+                name: "anio"
+                widget: "number"
+                value_type: "int"
+                default: 2026
+                min: 2000
+                max: 2100
+              - label: "Video (opcional, avanzado)"
+                name: "video"
+                widget: "file"
+                required: false
+                choose_url: false
+                hint: "Normalmente se deja vacío. Solo para videos MP4 cortos."
