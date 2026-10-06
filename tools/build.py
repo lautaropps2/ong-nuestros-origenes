@@ -7,7 +7,7 @@ import pathlib
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 SRC = ROOT / "tools" / "pages"
-V = "20261006c"  # cache-buster: súbelo en cada publicación
+V = "20261007"  # cache-buster: súbelo en cada publicación
 
 WA = "https://wa.me/56926175941"
 IG = "https://www.instagram.com/nuestrosorigenesong/"

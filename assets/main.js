@@ -292,9 +292,9 @@
   }, "count");
 
   /* ---------- Cuenta regresiva ---------- */
-  safe(function(){
+  // La inicia el evento principal con su propia fecha.
+  function startCountdown(target){
     var cells = $("#countCells"); if(!cells) return;
-    var target = new Date("2026-10-16T16:00:00-03:00").getTime();
     var done = $("#countDone"), label = $("#countLabel");
     var d = $('[data-u="d"]'), h = $('[data-u="h"]'), m = $('[data-u="m"]'), timer;
     function tick(){
@@ -306,46 +306,106 @@
       m.textContent = String(mins % 60).padStart(2, "0");
     }
     tick(); timer = setInterval(tick, 30000);
-  }, "countdown");
+  }
 
-  /* ---------- Eventos / Stock (data/eventos.json, editable en /admin) ---------- */
-  // data-eventos-modo="proximos" muestra solo los que aún no ocurren (inicio); "todos" muestra todo (Noticias).
+  /* ---------- Eventos (data/eventos.json, editable en /admin) ---------- */
+  // El PRIMER evento de la lista del panel es el principal (cada evento nuevo entra arriba).
+  //  [data-evento-principal]  bloque grande en Noticias
+  //  [data-slide-evento]      diapositiva del inicio
+  //  [data-eventos] "resto"   los demás, en el orden del panel (Noticias)
+  //  [data-eventos] "proximos" los que aún no ocurren, por fecha (Inicio)
   safe(function(){
-    var secs = $$("[data-eventos]"); if(!secs.length || !window.fetch) return;
+    if(!$("[data-eventos], [data-evento-principal], [data-slide-evento]") || !window.fetch) return;
     var BGS = ["#300807", "#06301B", "#050506"];
-    fetch(secs[0].getAttribute("data-eventos"), {cache:"no-store"})
+    var cap = function(s){ return s ? s.charAt(0).toUpperCase() + s.slice(1) : ""; };
+    var hasTime = function(d){ return d.getHours() || d.getMinutes(); };
+    var hora = function(d){ return String(d.getHours()).padStart(2, "0") + ":" + String(d.getMinutes()).padStart(2, "0") + " h"; };
+    var corta = function(d){ return d.toLocaleDateString("es-CL", {day:"numeric", month:"long"}); };
+    var larga = function(d){ return d.toLocaleDateString("es-CL", {weekday:"long", day:"numeric", month:"long", year:"numeric"}) + (hasTime(d) ? ", " + hora(d) : ""); };
+    var multiline = function(s){ return esc(s).replace(/\n/g, "<br>"); };
+
+    fetch("data/eventos.json", {cache:"no-store"})
       .then(function(r){ if(!r.ok) throw new Error(r.status); return r.json(); })
-      .then(function(data){ secs.forEach(function(sec){ render(sec, (data && data.items) || []); }); })
+      .then(function(data){
+        var all = ((data && data.items) || []).filter(function(x){ return x && x.titulo; }).map(function(x){
+          var d = x.fecha ? new Date(x.fecha) : null;
+          if(d && isNaN(d)) d = null;
+          return { titulo: String(x.titulo), desc: String(x.descripcion || ""), img: mediaPath(x.imagen), lugar: String(x.lugar || "").trim(), d: d };
+        });
+        if(!all.length) return;
+        safe(function(){ principal(all[0]); }, "evento-principal");
+        safe(function(){ slide(all[0]); }, "evento-slide");
+        $$("[data-eventos]").forEach(function(sec){ safe(function(){ lista(sec, all); }, "eventos-lista"); });
+      })
       .catch(function(){ /* sin datos: las secciones quedan ocultas */ });
 
-    function render(sec, all){
-        var list = $(".eventos-list", sec);
-        var proximos = sec.getAttribute("data-eventos-modo") === "proximos";
-        var limit = parseInt(sec.getAttribute("data-limite"), 10) || 0;
+    function principal(ev){
+      var sec = $("[data-evento-principal]"); if(!sec) return;
+      var f = function(n){ return $('[data-f="' + n + '"]', sec); };
+      var d = ev.d;
+      if(d){
+        f("dia").textContent = d.getDate();
+        f("mes").textContent = cap(d.toLocaleDateString("es-CL", {month:"long", year:"numeric"}));
+        f("hora").textContent = cap(d.toLocaleDateString("es-CL", {weekday:"long"})) + (hasTime(d) ? ", " + hora(d) : "");
+        f("fecha-larga").textContent = cap(larga(d)) + ".";
+      } else {
+        $(".date", sec).hidden = true;
+      }
+      f("titulo").textContent = ev.titulo;
+      f("desc").innerHTML = multiline(ev.desc);
+      if(ev.lugar){
+        var a = f("lugar");
+        a.href = "https://www.google.com/maps/search/?api=1&query=" + encodeURIComponent(ev.lugar);
+        $("span", a).textContent = ev.lugar;
+        a.hidden = false;
+      }
+      if(ev.img){
+        var box = f("img"), im = $("img", box);
+        im.src = ev.img; im.alt = ev.titulo; box.hidden = false;
+      }
+      var futuro = d && d.getTime() > Date.now();
+      var wa = f("wa");
+      if(futuro){
+        wa.href = "https://wa.me/" + WA + "?text=" + encodeURIComponent("Hola, quiero confirmar mi asistencia a «" + ev.titulo + "» (" + corta(d) + ").");
+      } else { wa.hidden = true; }
+      if(d) startCountdown(d.getTime()); else f("cuenta").hidden = true;
+      sec.hidden = false;
+    }
+
+    function slide(ev){
+      var s = $("[data-slide-evento]"); if(!s) return;
+      var g = function(n){ return $('[data-s="' + n + '"]', s); };
+      g("tag").textContent = "Evento" + (ev.d ? " · " + corta(ev.d) : "");
+      g("titulo").textContent = ev.titulo;
+      var txt = ev.desc.replace(/\s+/g, " ").trim();
+      g("desc").textContent = txt.length > 170 ? txt.slice(0, 167).trim() + "…" : txt;
+    }
+
+    function lista(sec, all){
+      var ul = $(".eventos-list", sec);
+      var modo = sec.getAttribute("data-eventos-modo");
+      var limit = parseInt(sec.getAttribute("data-limite"), 10) || 0;
+      var items;
+      if(modo === "proximos"){
         var today = new Date(); today.setHours(0, 0, 0, 0);
-        var items = all.filter(function(x){ return x && x.titulo; });
-        if(proximos){
-          items = items.filter(function(x){ var d = new Date(x.fecha); return !isNaN(d) && d >= today; });
-          items.sort(function(a, b){ return String(a.fecha || "").localeCompare(String(b.fecha || "")); });
-        } else {
-          items.sort(function(a, b){ return String(b.fecha || "").localeCompare(String(a.fecha || "")); });
-        }
-        if(limit) items = items.slice(0, limit);
-        if(!items.length) return;
-        list.innerHTML = items.map(function(it, k){
-          var d = it.fecha ? new Date(it.fecha) : null;
-          if(d && isNaN(d)) d = null;
-          var fecha = d ? d.toLocaleDateString("es-CL", {day:"numeric", month:"long", year:"numeric"}) : "";
-          var img = mediaPath(it.imagen);
-          var th = img
-            ? '<div class="ncard__th ncard__th--img"><img src="' + esc(img) + '" alt="" loading="lazy" decoding="async"></div>'
-            : '<div class="ncard__th" style="--bg:' + BGS[k % BGS.length] + '"><b>' + (d ? d.getDate() : "") + '</b><small>' +
-              (d ? esc(d.toLocaleDateString("es-CL", {month:"long", year:"numeric"})) : "") + '</small></div>';
-          return '<li class="ncard" style="animation:pageIn .6s ease ' + ((k % 6) * 0.08) + 's both">' + th +
-            '<div class="ncard__b">' + (fecha && img ? '<span class="meta">' + esc(fecha) + '</span>' : '') +
-            '<h3>' + esc(it.titulo) + '</h3><p>' + esc(it.descripcion || "").replace(/\n/g, "<br>") + '</p></div></li>';
-        }).join("");
-        sec.hidden = false;
+        items = all.filter(function(x){ return x.d && x.d >= today; }).sort(function(a, b){ return a.d - b.d; });
+      } else {
+        items = all.slice(1); // "resto": todo menos el principal, en el orden del panel
+      }
+      if(limit) items = items.slice(0, limit);
+      if(!items.length) return;
+      ul.innerHTML = items.map(function(it, k){
+        var d = it.d;
+        var th = it.img
+          ? '<div class="ncard__th ncard__th--img"><img src="' + esc(it.img) + '" alt="" loading="lazy" decoding="async"></div>'
+          : '<div class="ncard__th" style="--bg:' + BGS[k % BGS.length] + '"><b>' + (d ? d.getDate() : "") + '</b><small>' +
+            (d ? esc(d.toLocaleDateString("es-CL", {month:"long", year:"numeric"})) : "") + '</small></div>';
+        return '<li class="ncard" style="animation:pageIn .6s ease ' + ((k % 6) * 0.08) + 's both">' + th +
+          '<div class="ncard__b">' + (d && it.img ? '<span class="meta">' + esc(larga(d)) + '</span>' : '') +
+          '<h3>' + esc(it.titulo) + '</h3><p>' + multiline(it.desc) + '</p>' +
+          (it.lugar ? '<span class="meta">' + esc(it.lugar) + '</span>' : '') + '</div></li>';
+      }).join("");
+      sec.hidden = false;
     }
   }, "eventos");
 
@@ -365,14 +425,15 @@
 
   /* ---------- Bazar + carrito (todas las páginas) ---------- */
   safe(function(){
-    // Catálogo — edita aquí nombres, descripciones y precios (CLP).
+    // Los productos se editan en /admin → Productos (data/productos.json).
     var CATS = {
       bazar:     { label:"Bazar Dign@",   color:"#E3120B", stamp:"#FFFFFF" },
       emporio:   { label:"Emporio",       color:"#F7D417", stamp:"#0A0A0A" },
       vivero:    { label:"Vivero urbano", color:"#00A651", stamp:"#FFFFFF" },
       artesania: { label:"Artesanía",     color:"#0A0A0A", stamp:"#FFFFFF" }
     };
-    var PRODUCTS = [
+    // Respaldo por si data/productos.json no se puede cargar.
+    var FALLBACK = [
       { id:"chaqueta-mezclilla", cat:"bazar",     name:"Chaqueta de mezclilla reciclada", desc:"Mezclilla recuperada en buen estado, tallas variadas.", price:8900 },
       { id:"poleron-upcycling",  cat:"bazar",     name:"Polerón upcycling",               desc:"Intervenido a mano en nuestro taller de moda circular.", price:7500 },
       { id:"bolso-tela",         cat:"bazar",     name:"Bolso de tela reciclada",         desc:"Tela de descarte con costura reforzada.", price:4500 },
@@ -386,6 +447,30 @@
       { id:"muneca-lana",        cat:"artesania", name:"Muñeca de lana artesanal",        desc:"Hecha a mano, pieza única.", price:7900 },
       { id:"lampara-reciclada",  cat:"artesania", name:"Lámpara de material reciclado",   desc:"Pantalla elaborada con material recuperado.", price:9000 }
     ];
+    function slugify(s){
+      return String(s).normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
+    }
+    function loadProducts(){
+      if(!window.fetch) return Promise.resolve(FALLBACK);
+      return fetch("data/productos.json", {cache:"no-store"})
+        .then(function(r){ if(!r.ok) throw new Error(r.status); return r.json(); })
+        .then(function(d){
+          var seen = {};
+          return ((d && d.productos) || []).filter(function(x){
+            return x && x.nombre && x.disponible !== false && CATS[x.categoria];
+          }).map(function(x){
+            var base = slugify(x.nombre) || "producto", id = base, n = 2;
+            while(seen[id]) id = base + "-" + (n++);
+            seen[id] = 1;
+            return { id:id, cat:x.categoria, name:String(x.nombre), desc:String(x.descripcion || ""),
+                     price:Math.max(0, parseInt(x.precio, 10) || 0), img:mediaPath(x.imagen) };
+          });
+        })
+        .catch(function(){ return FALLBACK; });
+    }
+    loadProducts().then(function(PRODUCTS){ safe(function(){ initCart(PRODUCTS); }, "cart-init"); });
+
+    function initCart(PRODUCTS){
     var byId = {}; PRODUCTS.forEach(function(p){ byId[p.id] = p; });
 
     var KEY = "no_cart", cart = {};
@@ -414,12 +499,17 @@
 
     /* Productos (solo en bazar.html) */
     var grid = $("#products");
-    if(grid && grid.children.length === 0){
+    if(grid && grid.children.length === 0 && !PRODUCTS.length){
+      grid.innerHTML = '<li class="bazar-empty">Pronto agregaremos nuevos productos. Escríbenos por WhatsApp para consultar disponibilidad.</li>';
+    } else if(grid && grid.children.length === 0){
       grid.innerHTML = PRODUCTS.map(function(p, k){
         var c = CATS[p.cat];
+        var thumb = p.img
+          ? '<img class="card__img" src="' + esc(p.img) + '" alt="' + esc(p.name) + '" loading="lazy" decoding="async">'
+          : '<svg viewBox="0 0 100 70" aria-hidden="true" focusable="false"><rect width="100" height="70" fill="' + c.color + '"/>' +
+            '<use href="#chakana" x="35" y="20" width="30" height="30" style="color:' + c.stamp + '"/></svg>';
         return '<li class="card rv" style="--d:' + ((k % 4) * 0.07) + 's" data-cat="' + p.cat + '">' +
-          '<div class="card__th"><svg viewBox="0 0 100 70" aria-hidden="true" focusable="false"><rect width="100" height="70" fill="' + c.color + '"/>' +
-          '<use href="#chakana" x="35" y="20" width="30" height="30" style="color:' + c.stamp + '"/></svg>' +
+          '<div class="card__th">' + thumb +
           '<span class="card__cat" style="--cc:' + c.color + '">' + esc(c.label) + '</span></div>' +
           '<div class="card__b"><h3>' + esc(p.name) + '</h3><p>' + esc(p.desc) + '</p>' +
           '<div class="card__f"><span class="price">' + money(p.price) + '</span>' +
@@ -524,5 +614,6 @@
     });
 
     save(); render();
+    }
   }, "cart");
 })();

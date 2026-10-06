@@ -25,7 +25,7 @@ collections:
   # ---------------------------------------------------------------- EVENTOS
   - name: "eventos"
     label: "Eventos"
-    description: "Los eventos que aún no ocurren aparecen en el Inicio como «Próximos eventos». Todos aparecen en la página Noticias."
+    description: "El PRIMER evento de la lista aparece en grande como evento principal en Noticias y en el Inicio. Cada evento nuevo se agrega arriba; puedes arrastrarlos para cambiar el orden."
     files:
       - name: "lista"
         label: "Lista de eventos"
@@ -51,13 +51,69 @@ collections:
               - label: "Descripción corta"
                 name: "descripcion"
                 widget: "text"
-                hint: "Dos o tres líneas: qué es, dónde y a qué hora."
+                hint: "Dos o tres líneas: qué es y para quién."
               - label: "Imagen"
                 name: "imagen"
                 widget: "image"
                 required: false
                 choose_url: false
                 hint: "Opcional. Foto JPG o PNG; idealmente de menos de 2 MB."
+              - label: "Lugar"
+                name: "lugar"
+                widget: "string"
+                required: false
+                hint: "Opcional. Dirección, por ejemplo: Calle Jorge Rivera #967, Rancagua. Agrega un botón al mapa."
+
+  # ---------------------------------------------------------------- PRODUCTOS
+  - name: "productos"
+    label: "Productos"
+    description: "Productos del Bazar Dign@ y Emporio. Aparecen en la página Bazar en el mismo orden que aquí."
+    files:
+      - name: "lista"
+        label: "Lista de productos"
+        file: "data/productos.json"
+        fields:
+          - label: "Productos"
+            label_singular: "producto"
+            name: "productos"
+            widget: "list"
+            add_to_top: true
+            collapsed: true
+            summary: "{{fields.nombre}} · ${{fields.precio}}"
+            fields:
+              - label: "Nombre"
+                name: "nombre"
+                widget: "string"
+              - label: "Categoría"
+                name: "categoria"
+                widget: "select"
+                default: "bazar"
+                options:
+                  - { label: "Bazar Dign@ (ropa y accesorios)", value: "bazar" }
+                  - { label: "Emporio", value: "emporio" }
+                  - { label: "Vivero urbano", value: "vivero" }
+                  - { label: "Artesanía", value: "artesania" }
+              - label: "Precio (en pesos, sin puntos)"
+                name: "precio"
+                widget: "number"
+                value_type: "int"
+                min: 0
+                hint: "Ejemplo: 4500"
+              - label: "Descripción corta"
+                name: "descripcion"
+                widget: "string"
+                required: false
+              - label: "Foto"
+                name: "imagen"
+                widget: "image"
+                required: false
+                choose_url: false
+                hint: "Opcional. Si no subes foto, se muestra el logo con el color de la categoría."
+              - label: "Disponible"
+                name: "disponible"
+                widget: "boolean"
+                default: true
+                hint: "Apágalo cuando se agote: el producto se oculta de la tienda sin borrarlo."
 
   # ---------------------------------------------------------------- GALERÍA
   - name: "galeria"

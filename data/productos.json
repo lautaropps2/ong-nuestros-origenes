@@ -1,0 +1,16 @@
+{
+  "productos": [
+    { "nombre": "Chaqueta de mezclilla reciclada", "categoria": "bazar", "precio": 8900, "descripcion": "Mezclilla recuperada en buen estado, tallas variadas.", "imagen": "", "disponible": true },
+    { "nombre": "Polerón upcycling", "categoria": "bazar", "precio": 7500, "descripcion": "Intervenido a mano en nuestro taller de moda circular.", "imagen": "", "disponible": true },
+    { "nombre": "Bolso de tela reciclada", "categoria": "bazar", "precio": 4500, "descripcion": "Tela de descarte con costura reforzada.", "imagen": "", "disponible": true },
+    { "nombre": "Polera de algodón", "categoria": "bazar", "precio": 3500, "descripcion": "Moda circular: prenda revisada y lista para usar.", "imagen": "", "disponible": true },
+    { "nombre": "Bufanda de lana", "categoria": "artesania", "precio": 6500, "descripcion": "Tejida a palillo con lana natural.", "imagen": "", "disponible": true },
+    { "nombre": "Miel de abeja 500 g", "categoria": "emporio", "precio": 5500, "descripcion": "Miel de productores locales de la región.", "imagen": "", "disponible": true },
+    { "nombre": "Hierbas medicinales", "categoria": "emporio", "precio": 2500, "descripcion": "Paquete de hierbas secas para infusión.", "imagen": "", "disponible": true },
+    { "nombre": "Mermelada casera", "categoria": "emporio", "precio": 3200, "descripcion": "Frasco de fruta de temporada, preparación artesanal.", "imagen": "", "disponible": true },
+    { "nombre": "Planta del vivero urbano", "categoria": "vivero", "precio": 3000, "descripcion": "Planta de interior o exterior en macetero reciclado.", "imagen": "", "disponible": true },
+    { "nombre": "Kit de huerto en casa", "categoria": "vivero", "precio": 6900, "descripcion": "Sustrato, semillas de temporada y almácigo.", "imagen": "", "disponible": true },
+    { "nombre": "Muñeca de lana artesanal", "categoria": "artesania", "precio": 7900, "descripcion": "Hecha a mano, pieza única.", "imagen": "", "disponible": true },
+    { "nombre": "Lámpara de material reciclado", "categoria": "artesania", "precio": 9000, "descripcion": "Pantalla elaborada con material recuperado.", "imagen": "", "disponible": true }
+  ]
+}

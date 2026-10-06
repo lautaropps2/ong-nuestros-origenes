@@ -2,49 +2,49 @@
   <div class="wrap">
     <nav class="crumbs" aria-label="Ruta"><a href="index.html">Inicio</a><span aria-hidden="true">/</span><span aria-current="page">Noticias</span></nav>
     <h1 id="page-t"><span>Noticias</span></h1>
-    <p>Cumplimos 12 años. Te invitamos a celebrar con nosotros y a participar en la reunión de socios.</p>
+    <p>Eventos, actividades y novedades de ONG Nuestros Orígenes.</p>
   </div>
 </section>
 <div class="stripe" aria-hidden="true"><span></span><span></span><span></span><span></span></div>
 
-<!-- ============ EVENTO ============ -->
-<section class="sec" id="aniversario" aria-labelledby="ev-t">
+<!-- ============ EVENTO PRINCIPAL: el primero de la lista en /admin ============ -->
+<section class="sec" id="principal" aria-labelledby="ev-t" data-evento-principal hidden>
   <div class="wrap">
-    <article class="event pat rv">
+    <article class="event pat">
       <div>
+        <p class="event__kicker">Evento principal</p>
         <div class="date">
-          <b aria-hidden="true">16</b>
-          <span><strong>Octubre 2026</strong>Sábado, 16:00 h</span>
+          <b aria-hidden="true" data-f="dia"></b>
+          <span><strong data-f="mes"></strong><span data-f="hora"></span></span>
         </div>
-        <span class="sr-only">Sábado 16 de octubre de 2026, 16:00 horas.</span>
-        <h2 id="ev-t">Celebración de nuestros 12 años</h2>
-        <p>ONG de Desarrollo Nuestros Orígenes, fundada en Rancagua el 8 de agosto de 2014. Una tarde para encontrarnos, recordar el camino y proyectar lo que viene.</p>
-        <a class="where" href="{MAPS}" target="_blank" rel="noopener"><svg aria-hidden="true"><use href="#i-pin"/></svg>Calle Jorge Rivera #967, Rancagua</a>
+        <span class="sr-only" data-f="fecha-larga"></span>
+        <h2 id="ev-t" data-f="titulo"></h2>
+        <p data-f="desc"></p>
+        <a class="where" data-f="lugar" href="#" target="_blank" rel="noopener" hidden><svg aria-hidden="true"><use href="#i-pin"/></svg><span></span></a>
         <div class="event__cta">
-          <a class="btn btn--wa" href="{WA}?text=Hola%2C%20quiero%20confirmar%20mi%20asistencia%20a%20la%20celebraci%C3%B3n%20de%20los%2012%20a%C3%B1os%20(16%20de%20octubre)." target="_blank" rel="noopener"><svg aria-hidden="true"><use href="#wa"/></svg>Confirmar asistencia</a>
+          <a class="btn btn--wa" data-f="wa" href="{WA}" target="_blank" rel="noopener"><svg aria-hidden="true"><use href="#wa"/></svg>Confirmar asistencia</a>
         </div>
       </div>
       <div>
-        <p class="count__label" id="countLabel">Faltan</p>
-        <div class="count__cells" id="countCells" role="timer" aria-labelledby="countLabel">
-          <div><b data-u="d">—</b><small>días</small></div>
-          <div><b data-u="h">—</b><small>horas</small></div>
-          <div><b data-u="m">—</b><small>minutos</small></div>
-        </div>
-        <p class="count__done" id="countDone" hidden>Celebramos 12 años <span>Gracias por acompañarnos</span></p>
-        <div class="socios" id="socios">
-          <h3>Reunión de socios</h3>
-          <p>Actualización de la directiva de la organización. Si eres socio o socia, tu participación es importante.</p>
+        <div class="event__img" data-f="img" hidden><img src="" alt=""></div>
+        <div data-f="cuenta">
+          <p class="count__label" id="countLabel">Faltan</p>
+          <div class="count__cells" id="countCells" role="timer" aria-labelledby="countLabel">
+            <div><b data-u="d">—</b><small>días</small></div>
+            <div><b data-u="h">—</b><small>horas</small></div>
+            <div><b data-u="m">—</b><small>minutos</small></div>
+          </div>
+          <p class="count__done" id="countDone" hidden>Este evento ya se realizó <span>Gracias por acompañarnos</span></p>
         </div>
       </div>
     </article>
   </div>
 </section>
 
-<!-- ============ EVENTOS / STOCK (se edita desde /admin) ============ -->
-<section class="sec sec--tight" id="agenda" aria-labelledby="agenda-t" data-eventos="data/eventos.json" data-eventos-modo="todos" hidden>
+<!-- ============ OTROS EVENTOS (el resto de la lista) ============ -->
+<section class="sec sec--tight" id="agenda" aria-labelledby="agenda-t" data-eventos="data/eventos.json" data-eventos-modo="resto" hidden>
   <div class="wrap">
-    <div class="sh"><h2 id="agenda-t">Eventos</h2><p>Nuestras actividades, de la más reciente a la más antigua.</p></div>
+    <div class="sh"><h2 id="agenda-t">Otros eventos</h2></div>
     <ul class="news eventos-list"></ul>
   </div>
 </section>

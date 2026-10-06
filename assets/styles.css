@@ -39,6 +39,7 @@ p{margin:0}
 ul,ol,dl,dd{margin:0;padding:0}
 ul,ol{list-style:none}
 :focus-visible{outline:3px solid #1d5bd8;outline-offset:3px}
+[hidden]{display:none!important}
 .sr-only{position:absolute!important;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
 .skip{position:absolute;left:16px;top:-60px;z-index:200;background:var(--yellow);color:#0a0a0a;padding:.6em 1em;font-family:var(--display);text-decoration:none;border-radius:999px}
 .skip:focus{top:12px}
@@ -246,6 +247,10 @@ ul,ol{list-style:none}
 .gal__empty{color:rgba(255,255,255,.75);padding:3rem 0;text-align:center}
 .js .gal:not(.ready) .gbtn,.js .gal:not(.ready) .gal__bar{visibility:hidden}
 .js .gal:not(.ready) .gal__stage{background:#0d0d10 var(--pattern) 0 0/56px 56px}
+.event__kicker{display:inline-block;font-family:var(--display);font-weight:500;font-size:.8125rem;letter-spacing:.12em;text-transform:uppercase;background:var(--yellow);color:#0A0A0A;padding:.35em .8em;border-radius:999px;margin-bottom:1.5rem}
+.event p.event__kicker{color:#0A0A0A;margin-top:0}
+.event__img{border-radius:var(--r);overflow:hidden;aspect-ratio:4/3;margin-bottom:1.5rem;background:#111}
+.event__img img{width:100%;height:100%;object-fit:cover}
 .eventos-list{grid-template-columns:repeat(auto-fill,minmax(min(100%,300px),1fr))}
 .ncard__th--img{padding:0}
 .ncard__th--img::before{display:none}
@@ -376,6 +381,9 @@ ul,ol{list-style:none}
 .card__th{position:relative;aspect-ratio:10/7}
 .card__th svg{width:100%;height:100%;transition:transform .7s var(--ease)}
 .card:hover .card__th svg{transform:scale(1.05)}
+.card__img{width:100%;height:100%;object-fit:cover;transition:transform .7s var(--ease)}
+.card:hover .card__img{transform:scale(1.05)}
+.bazar-empty{grid-column:1/-1;padding:3rem 1rem;text-align:center;color:var(--muted);border:1px dashed var(--line);border-radius:var(--r-lg)}
 .card__cat{position:absolute;top:12px;left:12px;background:#fff;color:#0a0a0a;font-family:var(--display);font-size:.6875rem;letter-spacing:.08em;text-transform:uppercase;padding:.35em .65em;border-left:3px solid var(--cc);border-radius:0 6px 6px 0;line-height:1.2}
 .card__b{padding:1rem 1.1rem 1.15rem;display:flex;flex-direction:column;gap:.35rem;flex:1}
 .card h3{font-size:1.125rem;letter-spacing:-.02em;line-height:1.2}
