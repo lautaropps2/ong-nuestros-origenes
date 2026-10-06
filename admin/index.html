@@ -5,6 +5,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="robots" content="noindex, nofollow">
   <title>Panel · ONG Nuestros Orígenes</title>
+  <!-- Ruta fija para que funcione tanto en /admin como en /admin/ -->
+  <link href="/admin/config.yml" type="text/yaml" rel="cms-config-url">
+  <script>if (location.pathname === "/admin") location.replace("/admin/" + location.hash);</script>
 </head>
 <body>
   <!-- Decap CMS: lee automáticamente admin/config.yml -->
