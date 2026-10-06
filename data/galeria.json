@@ -1,6 +1,11 @@
 {
   "fotos": [
     {
+      "anio": 2026,
+      "titulo": "BAILES",
+      "imagen": "assets/img/subidas/cnp_06102026_200606.png"
+    },
+    {
       "titulo": "campaña apaga la TV 2012 TITEREDUCA",
       "anio": 2012,
       "imagen": "assets/img/galeria/2012-campana-apaga-la-tv-2012-titereduca.jpg",
