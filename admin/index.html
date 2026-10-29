@@ -7,10 +7,31 @@
   <title>Panel · ONG Nuestros Orígenes</title>
   <!-- Ruta fija para que funcione tanto en /admin como en /admin/ -->
   <link href="/admin/config.yml" type="text/yaml" rel="cms-config-url">
-  <script>if (location.pathname === "/admin") location.replace("/admin/" + location.hash);</script>
+  <script>
+    if (location.pathname === "/admin") location.replace("/admin/" + location.hash);
+    window.CMS_MANUAL_INIT = true;
+  </script>
 </head>
 <body>
-  <!-- Decap CMS: lee automáticamente admin/config.yml -->
+  <!-- Decap CMS: lee admin/config.yml -->
   <script src="https://unpkg.com/decap-cms@^3.0.0/dist/decap-cms.js"></script>
+  <script>
+    // El login usa la misma dirección desde la que se abre el panel,
+    // así funciona igual en ong-nuestros-origenes.vercel.app y en nuestrosorigenes.cl.
+    var origin = window.location.origin;
+    CMS.init({
+      config: {
+        backend: {
+          name: "github",
+          repo: "lautaropps2/ong-nuestros-origenes",
+          branch: "main",
+          base_url: origin,
+          auth_endpoint: "api/auth"
+        },
+        site_url: origin,
+        display_url: origin
+      }
+    });
+  </script>
 </body>
 </html>
