@@ -5,7 +5,7 @@
       "categoria": "bazar",
       "precio": 8900,
       "descripcion": "Mezclilla recuperada en buen estado, tallas variadas.",
-      "imagen": "",
+      "imagen": "assets/img/subidas/cnp_30102026_111713.png",
       "disponible": true
     },
     {
@@ -21,15 +21,7 @@
       "categoria": "bazar",
       "precio": 4500,
       "descripcion": "Tela de descarte con costura reforzada.",
-      "imagen": "",
-      "disponible": true
-    },
-    {
-      "nombre": "Polera de algodón",
-      "categoria": "bazar",
-      "precio": 3500,
-      "descripcion": "Moda circular: prenda revisada y lista para usar.",
-      "imagen": "",
+      "imagen": "assets/img/subidas/cnp_30102026_111944.png",
       "disponible": true
     },
     {
@@ -45,7 +37,7 @@
       "categoria": "emporio",
       "precio": 5500,
       "descripcion": "Miel de productores locales de la región.",
-      "imagen": "",
+      "imagen": "assets/img/subidas/cnp_30102026_112007.png",
       "disponible": true
     },
     {
@@ -77,14 +69,6 @@
       "categoria": "vivero",
       "precio": 6900,
       "descripcion": "Sustrato, semillas de temporada y almácigo.",
-      "imagen": "",
-      "disponible": true
-    },
-    {
-      "nombre": "Muñeca de lana artesanal",
-      "categoria": "artesania",
-      "precio": 7900,
-      "descripcion": "Hecha a mano, pieza única.",
       "imagen": "",
       "disponible": true
     },
