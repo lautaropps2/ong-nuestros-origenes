@@ -29,9 +29,7 @@ slug:
 
 # Límite por foto: avisa con un mensaje claro en vez de fallar al guardar
 media_library:
-  name: default
-  config:
-    max_file_size: 4000000   # 4 MB
+  max_file_size: 4000000   # 4 MB
 
 collections:
   # ---------------------------------------------------------------- EVENTOS
