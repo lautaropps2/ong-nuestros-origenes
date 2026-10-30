@@ -1,4 +1,4 @@
-﻿"""
+"""
 Genera las páginas del sitio a partir de tools/pages/*.html
 Uso:  python tools/build.py
 El header, el footer y los íconos se escriben una sola vez aquí.
@@ -7,22 +7,23 @@ import pathlib
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 SRC = ROOT / "tools" / "pages"
-V = "20261007"  # cache-buster: súbelo en cada publicación
+V = "20261030"  # cache-buster: súbelo en cada publicación
 
 WA = "https://wa.me/56926175941"
 IG = "https://www.instagram.com/nuestrosorigenesong/"
 MAIL = "nuestrosorigenesong@gmail.com"
+SITE = "https://www.nuestrosorigenes.cl"  # dirección oficial (nuestrosorigenes.cl sin www redirige aquí)
 MAPS = "https://www.google.com/maps/search/?api=1&amp;query=Calle%20Jorge%20Rivera%20967%2C%20Rancagua%2C%20Chile"
 
 PAGES = [
-    ("inicio", "index.html", "ONG Nuestros Orígenes · Rancagua, Chile",
-     "Promovemos y protegemos los derechos de pueblos originarios y comunidades migrantes residentes en Chile. Rancagua, desde 2014."),
+    ("inicio", "index.html", "ONG Nuestros Orígenes | Organización sin fines de lucro en Rancagua, Chile",
+     "ONG Nuestros Orígenes: organización sin fines de lucro de Rancagua, Chile (desde 2014) que protege los derechos de pueblos originarios y comunidades migrantes."),
     ("quienes", "quienes-somos.html", "Quiénes somos · ONG Nuestros Orígenes",
      "Conoce a ONG Nuestros Orígenes: nuestra organización, misión, marco legal y los once pueblos originarios reconocidos en Chile."),
     ("trabajo", "nuestro-trabajo.html", "Nuestro trabajo · ONG Nuestros Orígenes",
      "Líneas de trabajo y proyectos emblemáticos de ONG Nuestros Orígenes en Rancagua, Rapa Nui y la Región de O'Higgins."),
     ("noticias", "noticias.html", "Noticias · ONG Nuestros Orígenes",
-     "Novedades de ONG Nuestros Orígenes: celebración de nuestros 12 años y reunión de socios, 16 de octubre de 2026 en Rancagua."),
+     "Noticias y próximos eventos de ONG Nuestros Orígenes, organización sin fines de lucro de Rancagua, Chile."),
     ("galeria", "galeria.html", "Galería · ONG Nuestros Orígenes",
      "Línea de tiempo fotográfica de ONG Nuestros Orígenes: Titereduca, lengua de señas, Rapa Nui, ferias y reciclaje RAEE, de 2012 a hoy."),
     ("apoyanos", "apoyanos.html", "Apóyanos · ONG Nuestros Orígenes",
@@ -110,19 +111,33 @@ def nav_mobile(active):
 
 
 JSONLD = """<script type="application/ld+json">
-{"@context":"https://schema.org","@type":"NGO","name":"ONG Nuestros Orígenes",
-"description":"Promovemos y protegemos los derechos de pueblos originarios y comunidades migrantes residentes en Chile, en el marco del Convenio 169 de la OIT y la Ley Indígena 19.253.",
-"foundingDate":"2014-08-08","foundingLocation":"Rancagua, Chile","areaServed":"CL",
+{"@context":"https://schema.org","@graph":[
+{"@type":"NGO","@id":"https://www.nuestrosorigenes.cl/#organizacion",
+"name":"ONG Nuestros Orígenes","alternateName":["Nuestros Orígenes","ONG Nuestros Origenes","Organización No Gubernamental de Desarrollo Nuestros Orígenes"],
+"url":"https://www.nuestrosorigenes.cl/",
+"logo":{"@type":"ImageObject","url":"https://www.nuestrosorigenes.cl/assets/logo.png","width":512,"height":512},
+"image":"https://www.nuestrosorigenes.cl/assets/og-image.png",
+"description":"ONG Nuestros Orígenes es una organización no gubernamental sin fines de lucro con sede en Rancagua, Chile, fundada el 8 de agosto de 2014. Promueve y protege los derechos de los pueblos originarios y de las comunidades migrantes residentes en Chile, en el marco del Convenio 169 de la OIT y la Ley Indígena 19.253.",
+"foundingDate":"2014-08-08",
+"foundingLocation":{"@type":"Place","name":"Rancagua, Chile"},
 "email":"nuestrosorigenesong@gmail.com","telephone":"+56926175941",
 "address":{"@type":"PostalAddress","streetAddress":"Calle Jorge Rivera 967","addressLocality":"Rancagua","addressRegion":"Región del Libertador General Bernardo O'Higgins","addressCountry":"CL"},
-"sameAs":["https://www.instagram.com/nuestrosorigenesong/"],
-"event":{"@type":"Event","name":"Celebración de los 12 años de ONG Nuestros Orígenes","startDate":"2026-10-16T16:00:00-03:00",
-"eventAttendanceMode":"https://schema.org/OfflineEventAttendanceMode","eventStatus":"https://schema.org/EventScheduled",
-"location":{"@type":"Place","name":"Sede ONG Nuestros Orígenes","address":"Calle Jorge Rivera 967, Rancagua, Chile"}}}
+"location":{"@type":"Place","name":"Sede ONG Nuestros Orígenes","address":{"@type":"PostalAddress","streetAddress":"Calle Jorge Rivera 967","addressLocality":"Rancagua","addressCountry":"CL"}},
+"areaServed":[{"@type":"Country","name":"Chile"},{"@type":"AdministrativeArea","name":"Región del Libertador General Bernardo O'Higgins"}],
+"knowsAbout":["Derechos de los pueblos originarios","Comunidades migrantes en Chile","Convenio 169 de la OIT","Ley Indígena 19.253","Interculturalidad","Personas en situación de calle","Reciclaje y moda circular"],
+"contactPoint":{"@type":"ContactPoint","contactType":"Atención general","telephone":"+56926175941","email":"nuestrosorigenesong@gmail.com","availableLanguage":"es"},
+"sameAs":["https://www.instagram.com/nuestrosorigenesong/"]},
+{"@type":"WebSite","@id":"https://www.nuestrosorigenes.cl/#sitio","url":"https://www.nuestrosorigenes.cl/",
+"name":"ONG Nuestros Orígenes","inLanguage":"es-CL","publisher":{"@id":"https://www.nuestrosorigenes.cl/#organizacion"}}]}
 </script>"""
 
 
-def layout(key, title, desc, body):
+def page_url(fname):
+    return SITE + "/" if fname == "index.html" else SITE + "/" + fname[:-5]
+
+
+def layout(key, fname, title, desc, body):
+    url = page_url(fname)
     return f"""<!doctype html>
 <html lang="es-CL">
 <head>
@@ -130,16 +145,24 @@ def layout(key, title, desc, body):
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>{title}</title>
 <meta name="description" content="{desc}">
+<link rel="canonical" href="{url}">
 <meta name="theme-color" content="#050506">
 <meta property="og:type" content="website">
 <meta property="og:locale" content="es_CL">
 <meta property="og:site_name" content="ONG Nuestros Orígenes">
 <meta property="og:title" content="{title}">
 <meta property="og:description" content="{desc}">
-<meta name="twitter:card" content="summary">
+<meta property="og:url" content="{url}">
+<meta property="og:image" content="{SITE}/assets/og-image.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="Logo de ONG Nuestros Orígenes, Rancagua, Chile">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="{SITE}/assets/og-image.png">
 <meta name="twitter:title" content="{title}">
 <meta name="twitter:description" content="{desc}">
 <link rel="icon" href="{FAVICON}">
+<link rel="apple-touch-icon" href="assets/logo.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500&family=Space+Grotesk:wght@400;500;700&display=swap" rel="stylesheet">
@@ -247,8 +270,42 @@ def main():
     for key, fname, title, desc in PAGES:
         body = (SRC / fname).read_text(encoding="utf-8")
         body = body.replace("{WA}", WA).replace("{MAPS}", MAPS).replace("{MAIL}", MAIL).replace("{IG}", IG)
-        (ROOT / fname).write_text(layout(key, title, desc, body), encoding="utf-8")
+        (ROOT / fname).write_text(layout(key, fname, title, desc, body), encoding="utf-8")
         print("ok", fname)
+    write_robots_sitemap()
+
+
+AI_BOTS = ["GPTBot", "OAI-SearchBot", "ChatGPT-User", "ClaudeBot", "Claude-SearchBot", "Claude-User",
+           "PerplexityBot", "Perplexity-User", "Google-Extended", "Googlebot", "Bingbot", "Applebot", "Applebot-Extended"]
+
+
+def write_robots_sitemap():
+    robots = ["# ONG Nuestros Orígenes: el sitio es público; buscadores y asistentes de IA pueden leerlo.", ""]
+    for bot in AI_BOTS:
+        robots += [f"User-agent: {bot}", "Allow: /", "Disallow: /admin/", "Disallow: /api/", ""]
+    robots += ["User-agent: *", "Allow: /", "Disallow: /admin/", "Disallow: /api/", "", f"Sitemap: {SITE}/sitemap.xml", ""]
+    (ROOT / "robots.txt").write_text("\n".join(robots), encoding="utf-8")
+
+    urls = "".join(f"  <url><loc>{page_url(f)}</loc></url>\n" for _, f, _, _ in PAGES)
+    (ROOT / "sitemap.xml").write_text(
+        '<?xml version="1.0" encoding="UTF-8"?>\n'
+        '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n' + urls + "</urlset>\n", encoding="utf-8")
+
+    pages = "\n".join(f"- [{t.split(' · ')[0].split(' | ')[0]}]({page_url(f)}): {d}" for _, f, t, d in PAGES)
+    (ROOT / "llms.txt").write_text(f"""# ONG Nuestros Orígenes
+
+> ONG Nuestros Orígenes es una organización no gubernamental (ONG) sin fines de lucro de Rancagua, Región de O'Higgins, Chile, fundada el 8 de agosto de 2014. Promueve y protege los derechos de los pueblos originarios y de las comunidades migrantes residentes en Chile, en el marco del Convenio 169 de la OIT y la Ley Indígena 19.253.
+
+- Sitio oficial: {SITE}/
+- País: Chile · Ciudad: Rancagua · Dirección: Calle Jorge Rivera 967, Rancagua
+- Contacto: {MAIL} · WhatsApp +56 9 2617 5941
+- Instagram: {IG}
+
+## Páginas
+
+{pages}
+""", encoding="utf-8")
+    print("ok robots.txt, sitemap.xml, llms.txt")
 
 
 if __name__ == "__main__":

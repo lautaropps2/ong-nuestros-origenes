@@ -1,0 +1,73 @@
+# ONG Nuestros Orígenes: el sitio es público; buscadores y asistentes de IA pueden leerlo.
+
+User-agent: GPTBot
+Allow: /
+Disallow: /admin/
+Disallow: /api/
+
+User-agent: OAI-SearchBot
+Allow: /
+Disallow: /admin/
+Disallow: /api/
+
+User-agent: ChatGPT-User
+Allow: /
+Disallow: /admin/
+Disallow: /api/
+
+User-agent: ClaudeBot
+Allow: /
+Disallow: /admin/
+Disallow: /api/
+
+User-agent: Claude-SearchBot
+Allow: /
+Disallow: /admin/
+Disallow: /api/
+
+User-agent: Claude-User
+Allow: /
+Disallow: /admin/
+Disallow: /api/
+
+User-agent: PerplexityBot
+Allow: /
+Disallow: /admin/
+Disallow: /api/
+
+User-agent: Perplexity-User
+Allow: /
+Disallow: /admin/
+Disallow: /api/
+
+User-agent: Google-Extended
+Allow: /
+Disallow: /admin/
+Disallow: /api/
+
+User-agent: Googlebot
+Allow: /
+Disallow: /admin/
+Disallow: /api/
+
+User-agent: Bingbot
+Allow: /
+Disallow: /admin/
+Disallow: /api/
+
+User-agent: Applebot
+Allow: /
+Disallow: /admin/
+Disallow: /api/
+
+User-agent: Applebot-Extended
+Allow: /
+Disallow: /admin/
+Disallow: /api/
+
+User-agent: *
+Allow: /
+Disallow: /admin/
+Disallow: /api/
+
+Sitemap: https://www.nuestrosorigenes.cl/sitemap.xml
