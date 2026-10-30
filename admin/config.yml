@@ -21,6 +21,18 @@ logo_url: ../assets/logo-panel.svg
 media_folder: "assets/img/subidas"
 public_folder: "assets/img/subidas"
 
+# Nombres de archivo seguros (sin espacios, comas ni tildes) al subir fotos
+slug:
+  encoding: "ascii"
+  clean_accents: true
+  sanitize_replacement: "-"
+
+# Límite por foto: avisa con un mensaje claro en vez de fallar al guardar
+media_library:
+  name: default
+  config:
+    max_file_size: 4000000   # 4 MB
+
 collections:
   # ---------------------------------------------------------------- EVENTOS
   - name: "eventos"
