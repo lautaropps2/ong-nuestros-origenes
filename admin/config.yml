@@ -27,10 +27,6 @@ slug:
   clean_accents: true
   sanitize_replacement: "-"
 
-# Límite por foto: avisa con un mensaje claro en vez de fallar al guardar
-media_library:
-  max_file_size: 4000000   # 4 MB
-
 collections:
   # ---------------------------------------------------------------- EVENTOS
   - name: "eventos"
