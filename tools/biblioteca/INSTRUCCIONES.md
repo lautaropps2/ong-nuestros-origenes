@@ -1,8 +1,8 @@
 # Biblioteca del Barrio: pedidos, QR y seguimiento
 
-Cada libro que alguien compra en **nuestrosorigenes.cl/biblioteca** recibe un código (por ejemplo `NAV-7K3M-Q9PX`) y un **código QR**. Al escanearlo con el celular se abre la página de seguimiento: **Comprado → Enviado → Entregado en el hogar**.
+Cada compra en **nuestrosorigenes.cl/biblioteca** recibe un código (por ejemplo `NAV-7K3M-Q9PX`) y **un solo código QR**, aunque sea de 1 o de 100 libros. El comprador elige la cantidad que quiera (hasta 5.000 libros por compra). Al escanearlo con el celular se abre la página de seguimiento: **Comprado → Enviado → Entregado en el hogar**.
 
-El estado de cada libro se cambia en el panel: **nuestrosorigenes.cl/admin** → botón amarillo **Pedidos de libros** (abajo a la derecha), o directo en **nuestrosorigenes.cl/admin/pedidos**.
+El estado de cada compra se cambia en el panel: **nuestrosorigenes.cl/admin** → botón amarillo **Pedidos de libros** (abajo a la derecha), o directo en **nuestrosorigenes.cl/admin/pedidos**.
 
 Los pedidos se guardan en un repositorio **privado** de GitHub (`ong-pedidos`), no en el sitio público. Ahí quedan el nombre, el correo y el teléfono de cada comprador.
 

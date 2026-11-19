@@ -26,12 +26,12 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500&family=Space+Grotesk:wght@400;500;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="assets/styles.css?v=20261119c">
+<link rel="stylesheet" href="assets/styles.css?v=20261119d">
 <script>document.documentElement.classList.add("js")</script>
 
 <script defer src="assets/vendor/qrcode.js"></script>
-<script defer src="assets/qr-ong.js?v=20261119c"></script>
-<script defer src="assets/main.js?v=20261119c"></script>
+<script defer src="assets/qr-ong.js?v=20261119d"></script>
+<script defer src="assets/main.js?v=20261119d"></script>
 </head>
 <body data-page="seguimiento">
 <svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false"><defs>
@@ -126,7 +126,7 @@
       <!-- Resultado del código -->
       <div class="trk__main" data-trk-main hidden aria-live="polite">
         <div class="trk__ic" data-trk-ic><svg aria-hidden="true"><use href="#i-clock"/></svg></div>
-        <h1 class="trk__title" id="trk-t" data-trk-title>Buscando tu libro…</h1>
+        <h1 class="trk__title" id="trk-t" data-trk-title>Buscando tu compra…</h1>
         <p class="trk__who" data-trk-who></p>
         <p class="trk__note" data-trk-note></p>
         <ol class="trk__line" data-trk-line>
@@ -139,11 +139,11 @@
 
       <!-- Sin código: buscar -->
       <form class="trk__find" data-trk-find action="seguimiento.html" method="get">
-        <h1 class="trk__title" data-trk-find-t>Sigue tu libro</h1>
+        <h1 class="trk__title" data-trk-find-t>Sigue tus libros</h1>
         <p class="trk__who">Escribe el código que recibiste al comprar o escanea tu QR.</p>
-        <label class="sr-only" for="trk-code">Código del libro</label>
+        <label class="sr-only" for="trk-code">Código de tu compra</label>
         <input id="trk-code" name="c" placeholder="NAV-XXXX-XXXX" autocomplete="off" autocapitalize="characters" spellcheck="false" required>
-        <button class="btn btn--ink" type="submit">Ver mi libro</button>
+        <button class="btn btn--ink" type="submit">Ver mi compra</button>
       </form>
 
       <footer class="trk__foot"><a class="more" href="biblioteca.html">› Regalar otro libro <svg aria-hidden="true"><use href="#i-arr"/></svg></a></footer>

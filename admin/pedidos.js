@@ -134,14 +134,20 @@
     });
   }
   function diaClave(ms) { return partes(new Date(ms).toISOString()).dia; }
+  // Cada registro es UNA compra con "cantidad" libros y un solo código QR (los antiguos, sin cantidad, valen 1).
+  function cant(p) { return Math.max(1, parseInt(p && p.cantidad, 10) || 1); }
+  function nLibros(n) { return num(n) + (n === 1 ? " libro" : " libros"); }
 
   function pintarTiles() {
-    var c = { pend: 0, conf: 0, env: 0, ent: 0, anu: 0, plata: 0 };
+    // Todo se cuenta en LIBROS: una compra de 100 libros suma 100.
+    var c = { pend: 0, conf: 0, env: 0, ent: 0, anu: 0, plata: 0, libros: 0 };
     DATA.forEach(function (p) {
-      if (p.estado === "Pendiente de pago") c.pend++;
-      if (CONF.indexOf(p.estado) >= 0) { c.conf++; c.plata += p.valor || 0; }
-      if (p.estado === "Enviado" || p.estado === "Entregado") c.env++;
-      if (p.estado === "Entregado") c.ent++;
+      var n = cant(p);
+      if (p.estado !== "Anulado") c.libros += n;
+      if (p.estado === "Pendiente de pago") c.pend += n;
+      if (CONF.indexOf(p.estado) >= 0) { c.conf += n; c.plata += (p.valor || 0) * n; }
+      if (p.estado === "Enviado" || p.estado === "Entregado") c.env += n;
+      if (p.estado === "Entregado") c.ent += n;
       if (p.estado === "Anulado") c.anu++;
     });
     var pct = Math.min(100, c.conf / META * 100);
@@ -153,8 +159,8 @@
       '<div class="tile" style="--c:var(--blue)"><b>' + num(c.env) + '</b><span>Enviados</span></div>' +
       '<div class="tile" style="--c:var(--green)"><b>' + num(c.ent) + '</b><span>Entregados en el hogar</span></div>' +
       '<div class="tile" style="--c:var(--ink)"><b>' + money(c.plata) + '</b><span>Recaudado (pagos confirmados)</span></div>';
-    $("#sync").textContent = DATA.length + (DATA.length === 1 ? " libro registrado" : " libros registrados") +
-      (c.anu ? " · " + c.anu + " anulados" : "") + (ultimo ? " · actualizado " + ultimo.toLocaleTimeString("es-CL", { hour: "2-digit", minute: "2-digit" }) : "");
+    $("#sync").textContent = num(DATA.length) + (DATA.length === 1 ? " compra · " : " compras · ") + nLibros(c.libros) +
+      (c.anu ? " · " + c.anu + (c.anu === 1 ? " compra anulada" : " compras anuladas") : "") + (ultimo ? " · actualizado " + ultimo.toLocaleTimeString("es-CL", { hour: "2-digit", minute: "2-digit" }) : "");
   }
 
   function fila(p) {
@@ -163,11 +169,11 @@
     return '<tr data-c="' + esc(p.codigo) + '"' + (sel[p.codigo] ? ' class="sel"' : "") + '>' +
       '<td class="ck"><input type="checkbox" data-sel' + (sel[p.codigo] ? " checked" : "") + ' aria-label="Seleccionar ' + esc(p.codigo) + '"></td>' +
       '<td class="when" data-l="Fecha">' + esc(fecha(p.creado)) + '</td>' +
-      '<td data-l="Código"><span class="code"><a href="' + esc(TRACK + p.codigo) + '" target="_blank" rel="noopener">' + esc(p.codigo) + '</a></span><span class="sub">' + esc(p.pedido || "") + '</span></td>' +
-      '<td data-l="Libro">' + esc(p.libro) + '<span class="sub">' + esc([p.color, p.formato].filter(Boolean).join(" · ")) + '</span></td>' +
+      '<td data-l="Código"><span class="code"><a href="' + esc(TRACK + p.codigo) + '" target="_blank" rel="noopener">' + esc(p.codigo) + '</a></span>' + (p.pedido ? '<span class="sub">' + esc(p.pedido) + '</span>' : '') + '</td>' +
+      '<td data-l="Libros"><b class="cant">' + esc(nLibros(cant(p))) + '</b>' + esc(p.libro) + '<span class="sub">' + esc([p.color, p.formato].filter(Boolean).join(" · ")) + '</span></td>' +
       '<td data-l="Comprador"><b>' + esc(p.nombre) + '</b><span class="sub">' + esc(p.correo) + '</span><span class="sub">' + esc(p.telefono) + (p.comuna ? " · " + esc(p.comuna) : "") + '</span>' +
         (p.dedicatoria ? '<span class="ded">“' + esc(p.dedicatoria) + '”</span>' : "") + '</td>' +
-      '<td data-l="Valor">' + (p.valor ? money(p.valor) : '<span class="sub">Por confirmar</span>') + '</td>' +
+      '<td data-l="Valor">' + (p.valor ? money(p.valor * cant(p)) + (cant(p) > 1 ? '<span class="sub">' + money(p.valor) + ' c/u</span>' : '') : '<span class="sub">Por confirmar</span>') + '</td>' +
       '<td data-l="Estado"><div class="est" data-e="' + esc(p.estado) + '"><i class="dot" aria-hidden="true"></i><select data-estado aria-label="Estado de ' + esc(p.codigo) + '">' + opts + '</select></div>' +
         (fechas ? '<div class="fechas">' + esc(fechas) + '</div>' : "") + '</td>' +
       '<td data-l="Residencia y notas (internas)"><input class="inp" data-f="residencia" value="' + esc(p.residencia || "") + '" placeholder="Residencia / hogar" maxlength="120" aria-label="Residencia de ' + esc(p.codigo) + '">' +
@@ -242,9 +248,10 @@
   $("#bulkGo").addEventListener("click", function () {
     var est = $("#bulkE").value, cods = Object.keys(sel);
     if (!cods.length) return;
-    if (!confirm("¿Marcar " + cods.length + (cods.length === 1 ? " libro" : " libros") + " como «" + est + "»?")) return;
+    var libros = cods.reduce(function (s, c) { return s + cant(porCodigo[c]); }, 0);
+    if (!confirm("¿Marcar " + cods.length + (cods.length === 1 ? " compra" : " compras") + " (" + nLibros(libros) + ") como «" + est + "»?")) return;
     var b = this; b.disabled = true;
-    guardar(cods.map(function (c) { return { codigo: c, estado: est }; }), cods.length + " libros → " + est).then(function () { b.disabled = false; sel = {}; pintar(); });
+    guardar(cods.map(function (c) { return { codigo: c, estado: est }; }), cods.length + (cods.length === 1 ? " compra → " : " compras → ") + est).then(function () { b.disabled = false; sel = {}; pintar(); });
   });
   ["#q", "#fe", "#fp"].forEach(function (id) { $(id).addEventListener("input", pintar); });
   $("#refresh").addEventListener("click", function () { cargar(true).then(function () { toast("Pedidos actualizados"); }); });
@@ -260,8 +267,8 @@
   /* ---------------- QR ---------------- */
   // QR con la marca de la ONG: /assets/qr-ong.js (el mismo que recibe el comprador)
   function descargarQR(p) {
-    window.ongQR.tarjeta(TRACK + p.codigo, p.codigo, p.libro + (p.color ? " · " + p.color : ""))
-      .toBlob(function (blob) { if (blob) bajar(blob, "libro-" + p.codigo + ".png"); }, "image/png");
+    window.ongQR.tarjeta(TRACK + p.codigo, p.codigo, p.libro + (p.color ? " · " + p.color : ""), cant(p))
+      .toBlob(function (blob) { if (blob) bajar(blob, "compra-" + p.codigo + ".png"); }, "image/png");
   }
   function telWA(t) {
     var d = String(t || "").replace(/\D/g, "");
@@ -274,11 +281,11 @@
     if (!p) return; actual = p;
     var dlg = $("#dlg"), link = TRACK + p.codigo;
     $("#dlg-t").textContent = p.codigo;
-    $("#dlg-d").textContent = p.libro + (p.color ? " (" + p.color + ")" : "") + " · " + p.nombre + " · " + p.estado;
+    $("#dlg-d").textContent = nLibros(cant(p)) + " «" + p.libro + "»" + (p.color ? " (" + p.color + ")" : "") + " · " + p.nombre + " · " + p.estado;
     window.ongQR.canvas($("#dlg-qr"), link, 10);
     var tel = telWA(p.telefono), wa = $("#dlg-wa");
     wa.hidden = !tel;
-    if (tel) wa.href = "https://wa.me/" + tel + "?text=" + encodeURIComponent("Hola " + String(p.nombre).split(" ")[0] + ", gracias por regalar un libro en la Campaña Navidad 2026 de ONG Nuestros Orígenes. Aquí puedes seguir tu libro «" + p.libro + "» (código " + p.codigo + "): " + link);
+    if (tel) wa.href = "https://wa.me/" + tel + "?text=" + encodeURIComponent("Hola " + String(p.nombre).split(" ")[0] + ", gracias por regalar " + (cant(p) === 1 ? "un libro" : nLibros(cant(p))) + " en la Campaña Navidad 2026 de ONG Nuestros Orígenes. Aquí puedes seguir tu compra de «" + p.libro + "» (código " + p.codigo + "): " + link);
     $("#dlg-ver").href = link;
     if (dlg.showModal) dlg.showModal(); else dlg.setAttribute("open", "");
   }
@@ -319,7 +326,7 @@
     }
     function x(s) { return String(s).replace(/[&<>"]/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]; }).replace(/[\u0000-\u0008\u000b\u000c\u000e-\u001f]/g, ""); }
     function col(n) { var s = ""; n++; while (n) { var m = (n - 1) % 26; s = String.fromCharCode(65 + m) + s; n = Math.floor((n - 1) / 26); } return s; }
-    // Celdas: texto, número, o {v, s} con estilo (1 encabezado, 2 miles, 3 fecha y hora, 4 fecha)
+    // Celdas: texto, número, o {v, s} con estilo (1 encabezado, 2 miles, 3 fecha y hora, 4 fecha, 5 negrita, 6 negrita con miles)
     function hoja(filas, anchos) {
       var cols = "<cols>" + anchos.map(function (w, i) { return '<col min="' + (i + 1) + '" max="' + (i + 1) + '" width="' + w + '" customWidth="1"/>'; }).join("") + "</cols>";
       var data = filas.map(function (f, ri) {
@@ -356,11 +363,13 @@
           '<fills count="3"><fill><patternFill patternType="none"/></fill><fill><patternFill patternType="gray125"/></fill><fill><patternFill patternType="solid"><fgColor rgb="FFF7D417"/><bgColor indexed="64"/></patternFill></fill></fills>' +
           '<borders count="1"><border><left/><right/><top/><bottom/><diagonal/></border></borders>' +
           '<cellStyleXfs count="1"><xf numFmtId="0" fontId="0" fillId="0" borderId="0"/></cellStyleXfs>' +
-          '<cellXfs count="5"><xf numFmtId="0" fontId="0" fillId="0" borderId="0" xfId="0"/>' +
+          '<cellXfs count="7"><xf numFmtId="0" fontId="0" fillId="0" borderId="0" xfId="0"/>' +
           '<xf numFmtId="0" fontId="1" fillId="2" borderId="0" xfId="0" applyFont="1" applyFill="1"/>' +
           '<xf numFmtId="3" fontId="0" fillId="0" borderId="0" xfId="0" applyNumberFormat="1"/>' +
           '<xf numFmtId="164" fontId="0" fillId="0" borderId="0" xfId="0" applyNumberFormat="1"/>' +
-          '<xf numFmtId="165" fontId="0" fillId="0" borderId="0" xfId="0" applyNumberFormat="1"/></cellXfs>' +
+          '<xf numFmtId="165" fontId="0" fillId="0" borderId="0" xfId="0" applyNumberFormat="1"/>' +
+          '<xf numFmtId="0" fontId="1" fillId="0" borderId="0" xfId="0" applyFont="1"/>' +
+          '<xf numFmtId="3" fontId="1" fillId="0" borderId="0" xfId="0" applyFont="1" applyNumberFormat="1"/></cellXfs>' +
           '<cellStyles count="1"><cellStyle name="Normal" xfId="0" builtinId="0"/></cellStyles></styleSheet>' }
       ];
       hojas.forEach(function (h, i) { files.push({ name: "xl/worksheets/sheet" + (i + 1) + ".xml", data: hoja(h.filas, h.anchos) }); });
@@ -374,40 +383,73 @@
     document.body.appendChild(a); a.click(); a.remove();
     setTimeout(function () { URL.revokeObjectURL(a.href); }, 5000);
   }
+  // Excel con 3 hojas:
+  //   1. "Resumen por libro": cuántos libros se compraron de cada título y color (p. ej. 100 de uno, 2 de otro)
+  //   2. "Compras": una fila por compra (un QR), con la cantidad de libros
+  //   3. "Resumen por día"
+  // Las compras anuladas aparecen en "Compras" pero no se suman en los resúmenes.
   function excel(dias) {
     var desde = dias ? diaClave(Date.now() - (dias - 1) * 86400000) : "";
     var lista = DATA.filter(function (p) { return !desde || partes(p.creado).dia >= desde; })
       .slice().sort(function (a, b) { return a.creado < b.creado ? -1 : a.creado > b.creado ? 1 : 0; });
-    if (!lista.length) { toast(dias ? "No hay pedidos en los últimos " + dias + " días" : "Aún no hay pedidos", true); return; }
+    if (!lista.length) { toast(dias ? "No hay compras en los últimos " + dias + " días" : "Aún no hay compras", true); return; }
     var dt = function (iso) { var v = serialExcel(iso); return v === "" ? "" : { v: v, s: 3 }; };
-    var filas = [["Fecha y hora", "Código", "Pedido", "Libro", "Color", "Formato", "Valor", "Nombre", "Correo", "Teléfono", "Comuna", "Dedicatoria", "Estado", "Pago confirmado", "Enviado", "Entregado", "Residencia / hogar", "Notas internas"]]
+    var mil = function (n) { return { v: n || 0, s: 2 }; }, B = function (v) { return { v: v, s: 5 }; }, BM = function (n) { return { v: n || 0, s: 6 }; };
+    var activas = lista.filter(function (p) { return p.estado !== "Anulado"; });
+
+    // 1. Resumen por libro (y color)
+    function cuenta() { return { compras: 0, libros: 0, conf: 0, pend: 0, env: 0, ent: 0, plata: 0 }; }
+    function sumar(r, p) {
+      var n = cant(p); r.compras++; r.libros += n;
+      if (CONF.indexOf(p.estado) >= 0) { r.conf += n; r.plata += (p.valor || 0) * n; }
+      if (p.estado === "Pendiente de pago") r.pend += n;
+      if (p.estado === "Enviado" || p.estado === "Entregado") r.env += n;
+      if (p.estado === "Entregado") r.ent += n;
+    }
+    var porLibro = {}, total = cuenta();
+    activas.forEach(function (p) {
+      var L = porLibro[p.libro] || (porLibro[p.libro] = { total: cuenta(), colores: {} });
+      var k = p.color || "—";
+      sumar(L.total, p); sumar(L.colores[k] || (L.colores[k] = cuenta()), p); sumar(total, p);
+    });
+    var filaR = function (a, b, r, neg) {
+      var N = neg ? BM : mil;
+      return [neg ? B(a) : a, neg ? B(b) : b, N(r.libros), N(r.compras), N(r.conf), N(r.pend), N(r.env), N(r.ent), N(r.plata)];
+    };
+    var resumenLibro = [["Libro", "Color", "Libros comprados", "Compras", "Pago confirmado", "Pendientes de pago", "Enviados", "Entregados", "Recaudado"]];
+    Object.keys(porLibro).sort(function (a, b) { return porLibro[b].total.libros - porLibro[a].total.libros || a.localeCompare(b, "es"); }).forEach(function (t) {
+      var L = porLibro[t], cs = Object.keys(L.colores).sort();
+      if (cs.length === 1) { resumenLibro.push(filaR(t, cs[0] === "—" ? "" : cs[0], L.total)); return; }
+      cs.forEach(function (c) { resumenLibro.push(filaR(t, c === "—" ? "" : c, L.colores[c])); });
+      resumenLibro.push(filaR(t, "Total del libro", L.total, true));
+    });
+    resumenLibro.push(filaR("TOTAL", "", total, true));
+
+    // 2. Compras
+    var compras = [["Fecha y hora", "Código", "Libro", "Color", "Formato", "Cantidad de libros", "Valor c/u", "Total", "Nombre", "Correo", "Teléfono", "Comuna", "Dedicatoria", "Estado", "Pago confirmado", "Enviado", "Entregado", "Residencia / hogar", "Notas internas"]]
       .concat(lista.map(function (p) {
-        return [dt(p.creado), p.codigo, p.pedido || "", p.libro, p.color || "", p.formato || "", { v: p.valor || 0, s: 2 }, p.nombre, p.correo, p.telefono, p.comuna || "",
+        var n = cant(p);
+        return [dt(p.creado), p.codigo, p.libro, p.color || "", p.formato || "", mil(n), mil(p.valor), mil((p.valor || 0) * n), p.nombre, p.correo, p.telefono, p.comuna || "",
           p.dedicatoria || "", p.estado, dt(p.pago), dt(p.envio), dt(p.entrega), p.residencia || "", p.notas || ""];
       }));
-    // Resumen por día
-    var dias_ = {};
-    lista.forEach(function (p) {
-      var k = partes(p.creado).dia, r = dias_[k] || (dias_[k] = { n: 0, c: 0, e: 0, ent: 0, plata: 0 });
-      r.n++;
-      if (CONF.indexOf(p.estado) >= 0) { r.c++; r.plata += p.valor || 0; }
-      if (p.estado === "Enviado" || p.estado === "Entregado") r.e++;
-      if (p.estado === "Entregado") r.ent++;
-    });
-    var tot = { n: 0, c: 0, e: 0, ent: 0, plata: 0 };
-    var resumen = [["Día", "Libros pedidos", "Pago confirmado", "Enviados", "Entregados", "Recaudado"]].concat(Object.keys(dias_).sort().map(function (k) {
+
+    // 3. Resumen por día
+    var dias_ = {}, tot = cuenta();
+    activas.forEach(function (p) { var k = partes(p.creado).dia; sumar(dias_[k] || (dias_[k] = cuenta()), p); sumar(tot, p); });
+    var resumenDia = [["Día", "Compras", "Libros comprados", "Pago confirmado", "Enviados", "Entregados", "Recaudado"]].concat(Object.keys(dias_).sort().map(function (k) {
       var r = dias_[k], a = k.split("-");
-      Object.keys(tot).forEach(function (t) { tot[t] += r[t]; });
-      return [{ v: Date.UTC(+a[0], +a[1] - 1, +a[2]) / 86400000 + 25569, s: 4 }, r.n, r.c, r.e, r.ent, { v: r.plata, s: 2 }];
+      return [{ v: Date.UTC(+a[0], +a[1] - 1, +a[2]) / 86400000 + 25569, s: 4 }, mil(r.compras), mil(r.libros), mil(r.conf), mil(r.env), mil(r.ent), mil(r.plata)];
     }));
-    resumen.push([{ v: "Total", s: 1 }, { v: tot.n, s: 1 }, { v: tot.c, s: 1 }, { v: tot.e, s: 1 }, { v: tot.ent, s: 1 }, { v: tot.plata, s: 2 }]);
+    resumenDia.push([B("Total"), BM(tot.compras), BM(tot.libros), BM(tot.conf), BM(tot.env), BM(tot.ent), BM(tot.plata)]);
+
     var blob = XLSX.libro([
-      { nombre: "Pedidos", filas: filas, anchos: [17, 16, 18, 36, 10, 10, 10, 26, 30, 16, 16, 40, 18, 17, 17, 17, 26, 30] },
-      { nombre: "Resumen por día", filas: resumen, anchos: [14, 16, 17, 12, 12, 14] }
+      { nombre: "Resumen por libro", filas: resumenLibro, anchos: [40, 16, 17, 10, 16, 18, 11, 12, 14] },
+      { nombre: "Compras", filas: compras, anchos: [17, 16, 36, 10, 10, 12, 11, 12, 26, 30, 16, 16, 40, 18, 17, 17, 17, 26, 30] },
+      { nombre: "Resumen por día", filas: resumenDia, anchos: [14, 10, 17, 16, 12, 12, 14] }
     ]);
     var hoy = diaClave(Date.now());
     bajar(blob, "pedidos-biblioteca-" + (dias ? "ultimos-" + dias + "-dias-" : "") + hoy + ".xlsx");
-    toast("Excel descargado: " + lista.length + (lista.length === 1 ? " libro" : " libros"));
+    toast("Excel descargado: " + num(lista.length) + (lista.length === 1 ? " compra · " : " compras · ") + nLibros(total.libros));
   }
   $("#xls7").addEventListener("click", function () { excel(7); });
   $("#xlsAll").addEventListener("click", function () { excel(0); });

@@ -2,7 +2,7 @@
    - Esquinas en los colores de la ONG: rojo arriba a la izquierda y verde arriba a la derecha, como en el logo.
    - Símbolo de la ONG (la chakana de 7×7) al centro, sobre un recuadro blanco.
    - Usa corrección de errores alta (H, o Q si el enlace es largo), así el QR se lee aunque el logo tape el centro.
-   Lo usan biblioteca.html (al comprar) y el panel /admin/pedidos. */
+   Hay un QR por compra (aunque sean muchos libros). Lo usan biblioteca.html (al comprar) y el panel /admin/pedidos. */
 (function(){
   "use strict";
   var TINTA = "#050506", ROJO = "#E3120B", VERDE = "#00A651", AMARILLO = "#F7D417", GRIS = "#D6D4CC";
@@ -64,8 +64,10 @@
     pintar(g, q, x + d, y + d, m);
     return true;
   }
-  // Tarjeta para descargar o imprimir: franjas con los colores de la ONG, QR, código y libro.
-  function tarjeta(texto, codigo, libro){
+  // Tarjeta para descargar o imprimir: franjas con los colores de la ONG, QR, código, libro y cuántos libros sigue.
+  // Un QR por compra: "cantidad" es el número de libros de esa compra.
+  function tarjeta(texto, codigo, libro, cantidad){
+    var n = Math.max(1, parseInt(cantidad, 10) || 1);
     var W = 720, H = 920, cv = document.createElement("canvas"); cv.width = W; cv.height = H;
     var g = cv.getContext("2d"), f = '"Space Grotesk", Arial, sans-serif';
     g.fillStyle = "#fff"; g.fillRect(0, 0, W, H);
@@ -78,14 +80,15 @@
     g.fillStyle = TINTA; g.font = "700 40px " + f; g.fillText(codigo, W / 2, 716);
     g.fillStyle = "#55554F"; g.font = "400 23px " + f;
     var t = String(libro || ""); g.fillText(t.length > 50 ? t.slice(0, 48) + "…" : t, W / 2, 758);
-    g.fillText("Escanéame y sigue este libro hasta la residencia", W / 2, 798);
+    g.fillText(n === 1 ? "Escanéame y sigue este libro hasta la residencia"
+      : "Escanéame y sigue estos " + n.toLocaleString("es-CL") + " libros hasta la residencia", W / 2, 798);
     g.fillStyle = VERDE; g.font = "700 22px " + f; g.fillText("nuestrosorigenes.cl", W / 2, 856);
     return cv;
   }
-  function descargar(texto, codigo, libro){
-    tarjeta(texto, codigo, libro).toBlob(function(blob){
+  function descargar(texto, codigo, libro, cantidad){
+    tarjeta(texto, codigo, libro, cantidad).toBlob(function(blob){
       if(!blob) return;
-      var a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = "libro-" + codigo + ".png";
+      var a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = "compra-" + codigo + ".png";
       document.body.appendChild(a); a.click(); a.remove();
       setTimeout(function(){ URL.revokeObjectURL(a.href); }, 4000);
     }, "image/png");

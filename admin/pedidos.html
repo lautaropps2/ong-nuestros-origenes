@@ -79,6 +79,7 @@ tr.saving{opacity:.6}
 td.ck,th.ck{width:36px;padding-right:0}
 .ck input{width:18px;height:18px;accent-color:var(--ink);margin:2px 0 0}
 .code{font-family:var(--display);font-weight:500;letter-spacing:.04em;white-space:nowrap}
+b.cant{display:table;margin:0 0 4px;padding:1px 9px;border-radius:999px;background:var(--yellow);color:#050506;font-family:var(--display);font-weight:600;font-size:.8125rem;white-space:nowrap}
 .code a{text-decoration:none;border-bottom:1px dashed var(--muted)}
 .sub{color:var(--muted);font-size:.82rem;display:block}
 .ded{display:block;font-size:.82rem;color:var(--muted);font-style:italic;margin-top:4px;max-width:36ch}
@@ -179,7 +180,7 @@ dialog::backdrop{background:rgba(5,5,6,.55)}
       <table>
         <thead><tr>
           <th class="ck"><input type="checkbox" id="all" aria-label="Seleccionar todos los visibles"></th>
-          <th>Fecha</th><th>Código</th><th>Libro</th><th>Comprador</th><th>Valor</th><th>Estado</th><th>Residencia y notas (internas)</th><th></th>
+          <th>Fecha</th><th>Código</th><th>Libros</th><th>Comprador</th><th>Valor</th><th>Estado</th><th>Residencia y notas (internas)</th><th></th>
         </tr></thead>
         <tbody id="rows"></tbody>
       </table>
@@ -207,8 +208,8 @@ dialog::backdrop{background:rgba(5,5,6,.55)}
     <button class="close" type="button" data-close aria-label="Cerrar">×</button>
     <h2 id="dlg-t"></h2>
     <p id="dlg-d"></p>
-    <canvas id="dlg-qr" role="img" aria-label="Código QR del libro"></canvas>
-    <p>Al escanearlo se abre el seguimiento del libro.</p>
+    <canvas id="dlg-qr" role="img" aria-label="Código QR de la compra"></canvas>
+    <p>Un QR por compra: al escanearlo se abre el seguimiento de todos sus libros.</p>
     <div class="row">
       <button class="btn btn--y" type="button" id="dlg-dl">Descargar QR</button>
       <button class="btn btn--o" type="button" id="dlg-copy">Copiar enlace</button>
@@ -223,7 +224,7 @@ dialog::backdrop{background:rgba(5,5,6,.55)}
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
 <script src="/assets/vendor/qrcode.js"></script>
-<script src="/assets/qr-ong.js?v=20261119c"></script>
-<script src="/admin/pedidos.js?v=20261119c"></script>
+<script src="/assets/qr-ong.js?v=20261119d"></script>
+<script src="/admin/pedidos.js?v=20261119d"></script>
 </body>
 </html>

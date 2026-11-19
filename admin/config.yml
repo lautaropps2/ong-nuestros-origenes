@@ -124,7 +124,7 @@ collections:
   # ---------------------------------------------------------------- BIBLIOTECA
   - name: "biblioteca"
     label: "Biblioteca"
-    description: "Libros, meta y forma de pago de la Campaña Navidad 2026. Los pedidos, el QR y el estado de cada libro (Comprado, Enviado, Entregado) y el Excel están en el botón amarillo «Pedidos de libros», abajo a la derecha."
+    description: "Libros, meta y forma de pago de la Campaña Navidad 2026. Las compras (un QR por compra), su estado (Comprado, Enviado, Entregado) y el Excel están en el botón amarillo «Pedidos de libros», abajo a la derecha."
     files:
       - name: "catalogo"
         label: "Libros, meta y forma de pago"

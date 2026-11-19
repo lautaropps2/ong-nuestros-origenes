@@ -34,7 +34,7 @@
     <div class="sh rv"><p class="eyebrow">Cómo funciona</p><h2 id="pasos-t">Más que un libro</h2></div>
     <ol class="helps steps" data-stagger>
       <li class="lcard c-red"><div class="circle"><svg aria-hidden="true"><use href="#i-book"/></svg></div><h3>1. Elige tu libro</h3><p>Escoge un ejemplar de la Biblioteca del Barrio, en formato físico o digital, y completa tus datos.</p></li>
-      <li class="lcard c-ink"><div class="circle"><svg aria-hidden="true"><use href="#i-qr"/></svg></div><h3>2. Rastrea con QR</h3><p>Al completar tu compra recibes un código QR por cada libro. Escanéalo y mira el estado de envío hasta que llega a los niños de la residencia.</p></li>
+      <li class="lcard c-ink"><div class="circle"><svg aria-hidden="true"><use href="#i-qr"/></svg></div><h3>2. Rastrea con QR</h3><p>Al completar tu compra recibes un código QR, uno solo para todos tus libros. Escanéalo y mira el estado de envío hasta que llegan a los niños de la residencia.</p></li>
       <li class="lcard c-green"><div class="circle"><svg aria-hidden="true"><use href="#i-star"/></svg></div><h3>3. Talleres de verano</h3><p>Tu aporte también financia talleres de cuentacuentos y emprendimiento sustentable en la “Resi”, para que el libro no quede olvidado en un rincón.</p></li>
     </ol>
   </div>
@@ -57,7 +57,7 @@
       <div>
         <svg class="big-ic" aria-hidden="true"><use href="#i-qr"/></svg>
         <h2 id="track-t">¿Ya regalaste un libro?</h2>
-        <p>Escanea tu código QR o escribe el código de tu libro (por ejemplo NAV-7K3M-Q9PX).</p>
+        <p>Escanea tu código QR o escribe el código de tu compra (por ejemplo NAV-7K3M-Q9PX).</p>
       </div>
       <form class="track-form" action="seguimiento.html" method="get">
         <label class="sr-only" for="track-code">Código del libro</label>
@@ -82,7 +82,7 @@
       </div>
       <div class="mv__row">
         <h3>Garantía de seguimiento</h3>
-        <p>Cada libro tiene su propio código QR. Con él puedes comprobar cuándo confirmamos tu compra, cuándo sale y cuándo llega a las niñas, niños y adolescentes de la residencia.</p>
+        <p>Cada compra tiene su propio código QR, uno solo aunque compres muchos libros. Con él puedes comprobar cuándo confirmamos tu compra, cuándo salen tus libros y cuándo llegan a las niñas, niños y adolescentes de la residencia.</p>
       </div>
     </div>
   </div>
@@ -104,7 +104,14 @@
         <div class="field"><label for="b-correo">Correo *</label><input id="b-correo" name="correo" type="email" autocomplete="email" required maxlength="120"></div>
         <div class="field"><label for="b-telefono">Teléfono / WhatsApp *</label><input id="b-telefono" name="telefono" type="tel" autocomplete="tel" placeholder="+56 9 ..." required maxlength="30"></div>
         <div class="field"><label for="b-comuna">Comuna</label><input id="b-comuna" name="comuna" autocomplete="address-level2" maxlength="60"></div>
-        <div class="field"><label for="b-cantidad">Cantidad de libros</label><select id="b-cantidad" name="cantidad"></select></div>
+        <div class="field"><label for="b-cantidad">Cantidad de libros</label>
+          <div class="cant">
+            <button class="cant__b" type="button" data-cant="-1" aria-label="Un libro menos">−</button>
+            <input id="b-cantidad" name="cantidad" type="number" inputmode="numeric" min="1" max="5000" step="1" value="1" required>
+            <button class="cant__b" type="button" data-cant="1" aria-label="Un libro más">+</button>
+          </div>
+          <div class="cant__r" role="group" aria-label="Cantidades rápidas"><button type="button" data-cant-set="10">10</button><button type="button" data-cant-set="50">50</button><button type="button" data-cant-set="100">100</button></div>
+        </div>
       </div>
       <div class="field"><label for="b-dedicatoria">Dedicatoria para quien recibe el libro (opcional)</label><textarea id="b-dedicatoria" name="dedicatoria" maxlength="300" rows="3" placeholder="Ej.: ¡Feliz Navidad! Que este libro te acompañe."></textarea></div>
       <div class="hp" aria-hidden="true"><label for="b-web">No llenar</label><input id="b-web" name="web" tabindex="-1" autocomplete="off"></div>
@@ -120,13 +127,14 @@
             <li><b>Destino de los libros.</b> Los libros que compras en esta campaña se donan a ONG Nuestros Orígenes, que los reparte en residencias de niñas, niños y adolescentes de Chile. No se envían a tu domicilio.</li>
             <li><b>Distribución.</b> La ONG asigna cada libro según las necesidades de cada residencia, como la edad y la cantidad de niñas, niños y adolescentes. No es posible elegir una residencia ni a una persona en particular. Las entregas se hacen durante la campaña y sus fechas pueden variar por razones de logística.</li>
             <li><b>Pago y meta.</b> Tu compra queda «Pendiente de pago» hasta que confirmemos el pago. Solo los libros pagados suman a la meta de la campaña. Te informamos el valor de cada libro antes de que pagues.</li>
-            <li><b>Seguimiento con código QR.</b> Cada libro tiene un código único. Al escanearlo verás su estado (Comprado, Enviado y Entregado), las fechas y tu nombre abreviado. Nunca se muestran tu correo ni tu teléfono.</li>
+            <li><b>Seguimiento con código QR.</b> Cada compra tiene un código único, válido para todos los libros de esa compra. Al escanearlo verás su estado (Comprado, Enviado y Entregado), las fechas y tu nombre abreviado. Nunca se muestran tu correo ni tu teléfono.</li>
             <li><b>Resguardo de niñas, niños y adolescentes.</b> Para proteger su identidad, no publicamos ni compartimos sus nombres, sus fotografías ni la ubicación de las residencias, salvo en casos excepcionales autorizados.</li>
             <li><b>Dedicatoria.</b> Si escribes una, la incluiremos cuando sea posible. Podemos omitir textos que no sean adecuados para menores de edad o que incluyan datos de contacto.</li>
             <li><b>Tus datos personales.</b> Usamos tu nombre, correo, teléfono y comuna solo para gestionar esta compra, coordinar el pago y mantener el seguimiento. Puedes pedir que los corrijamos o eliminemos escribiéndonos por WhatsApp al +56 9 2617 5941.</li>          </ol>
           <p class="tyc__f">Al marcar la casilla declaras que leíste y aceptas estos términos. Versión del 19 de noviembre de 2026.</p>
         </div>
       </div>
+      <p class="buy__total"><b id="buy-total">1 libro</b><span id="buy-total-v"></span><small>Recibes un solo código QR para toda tu compra.</small></p>
       <p class="form__msg" role="status" aria-live="polite"></p>
       <button class="btn btn--ink buy__send" type="submit">Confirmar compra</button>
     </form>

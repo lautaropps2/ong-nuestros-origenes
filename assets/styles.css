@@ -623,6 +623,22 @@ ul,ol{list-style:none}
 .buy__grid{display:grid;gap:1rem}
 @media (min-width:600px){.buy__grid{grid-template-columns:1fr 1fr}}
 .buy .field textarea{min-height:84px}
+/* cantidad de libros: − número + y atajos (una compra = un solo QR) */
+.cant{display:flex;align-items:stretch;border:1px solid #CFCDC5;border-radius:12px;background:#fff;overflow:hidden;transition:border-color .2s, box-shadow .2s}
+.cant:focus-within{border-color:var(--text);box-shadow:0 0 0 3px rgba(29,91,216,.25)}
+.field .cant input{border:0;border-radius:0;box-shadow:none;min-width:0;padding:.8rem .4rem;text-align:center;font-family:var(--display);font-weight:600;font-variant-numeric:tabular-nums;-moz-appearance:textfield;appearance:textfield}
+.field .cant input:focus{box-shadow:none}
+.cant input::-webkit-outer-spin-button,.cant input::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
+.cant__b{flex:none;width:48px;border:0;background:var(--soft);font-size:1.25rem;line-height:1;cursor:pointer;transition:background .2s}
+.cant__b:hover{background:#E9E7E0}
+.cant__r{display:flex;gap:.4rem;flex-wrap:wrap}
+.cant__r button{border:1px solid var(--line);background:#fff;border-radius:999px;padding:.3em .9em;font-family:var(--display);font-weight:500;font-size:.875rem;cursor:pointer;transition:border-color .2s, box-shadow .2s}
+.cant__r button:hover{border-color:var(--ink)}
+.cant__r button.on{border-color:var(--ink);box-shadow:inset 0 0 0 1px var(--ink)}
+.buy__total{display:flex;flex-wrap:wrap;align-items:baseline;gap:.2rem .8rem;padding:.85rem 1rem;background:var(--soft);border-radius:12px}
+.buy__total b{font-family:var(--display);font-size:1.0625rem;font-variant-numeric:tabular-nums}
+.buy__total span{font-variant-numeric:tabular-nums}
+.buy__total small{flex-basis:100%;color:var(--muted);font-size:.8125rem}
 .hp{position:absolute;left:-9999px;width:1px;height:1px;overflow:hidden}
 .check{display:flex;gap:.65rem;align-items:flex-start;font-size:.9375rem;color:var(--muted);cursor:pointer}
 .check input{width:20px;height:20px;margin-top:.15rem;flex:none;accent-color:var(--ink)}
@@ -636,6 +652,8 @@ ul,ol{list-style:none}
 .done h2{font-size:clamp(26px,3vw,36px)}
 .done p{color:var(--muted)}
 .qrs{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:.9rem}
+.qrs--uno{grid-template-columns:minmax(0,300px);justify-content:center}
+.qr__n{font-family:var(--display);font-weight:600;color:var(--text)}
 .qr{border:1px solid var(--line);border-radius:var(--r);padding:1rem;display:grid;justify-items:center;gap:.6rem;text-align:center}
 .qr canvas{width:168px;height:168px}
 .qr b{font-family:var(--display);letter-spacing:.06em;font-size:1rem}

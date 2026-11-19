@@ -12,8 +12,9 @@
 //
 // Rutas:
 //   GET  /api/pedidos?accion=estadisticas            público: libros comprados, enviados y entregados
-//   GET  /api/pedidos?accion=seguimiento&codigo=…    público: estado de un libro (sin correo ni teléfono)
-//   POST /api/pedidos                                público: registra una compra y entrega un código por libro
+//   GET  /api/pedidos?accion=seguimiento&codigo=…    público: estado de una compra (sin correo ni teléfono)
+//   POST /api/pedidos                                público: registra una compra y entrega UN código (un QR) por compra,
+//                                                    sea de 1 o de 1.000 libros (campo "cantidad")
 //   GET  /api/pedidos?accion=lista                   panel: todos los pedidos (requiere login de GitHub)
 //   POST /api/pedidos?accion=actualizar              panel: cambia estado, residencia o notas
 const crypto = require("crypto");
@@ -25,7 +26,8 @@ const BRANCH = process.env.PEDIDOS_RAMA || "main";
 const FILE = "pedidos.json";
 const ESTADOS = ["Pendiente de pago", "Comprado", "Enviado", "Entregado", "Anulado"];
 const CONFIRMADOS = ["Comprado", "Enviado", "Entregado"];
-const MAX_POR_PEDIDO = 10;
+const MAX_POR_PEDIDO = 5000;   // libros en una sola compra
+const MAX_COMPRAS_HORA = 10;   // compras por correo en una hora (frena envíos automáticos)
 const TERMINOS = "2026-11-19"; // fecha de la versión de los términos en biblioteca.html (súbela si cambian)
 const ALFABETO = "ABCDEFGHJKMNPQRSTUVWXYZ23456789"; // sin 0/O, 1/I/L para que se lea fácil
 
@@ -150,13 +152,18 @@ function nombreCorto(n) {
   return p.length > 1 ? `${p[0]} ${p[1][0].toUpperCase()}.` : p[0];
 }
 
+// Cada registro es una compra con "cantidad" libros (los registros antiguos, sin cantidad, valen 1).
+const cantidadDe = (p) => Math.max(1, parseInt(p && p.cantidad, 10) || 1);
+
+// Cuenta LIBROS (no compras): una compra de 100 libros suma 100 a la meta.
 function estadisticas(pedidos) {
   let comprados = 0, enviados = 0, entregados = 0, pendientes = 0;
   for (const p of pedidos) {
-    if (CONFIRMADOS.includes(p.estado)) comprados++;
-    if (p.estado === "Enviado" || p.estado === "Entregado") enviados++;
-    if (p.estado === "Entregado") entregados++;
-    if (p.estado === "Pendiente de pago") pendientes++;
+    const n = cantidadDe(p);
+    if (CONFIRMADOS.includes(p.estado)) comprados += n;
+    if (p.estado === "Enviado" || p.estado === "Entregado") enviados += n;
+    if (p.estado === "Entregado") entregados += n;
+    if (p.estado === "Pendiente de pago") pendientes += n;
   }
   return { ok: true, comprados, enviados, entregados, pendientes };
 }
@@ -245,7 +252,9 @@ async function registrar(req, res) {
   const telefono = limpiar(b.telefono, 30);
   const comuna = limpiar(b.comuna, 60);
   const dedicatoria = limpiarTexto(b.dedicatoria, 300);
-  const cantidad = Math.min(MAX_POR_PEDIDO, Math.max(1, parseInt(b.cantidad, 10) || 1));
+  const cantidad = Number(b.cantidad);
+  if (!Number.isInteger(cantidad) || cantidad < 1) return responder(res, 400, { ok: false, error: "Indica cuántos libros quieres comprar." });
+  if (cantidad > MAX_POR_PEDIDO) return responder(res, 400, { ok: false, error: `Para más de ${MAX_POR_PEDIDO.toLocaleString("es-CL")} libros escríbenos por WhatsApp.` });
   if (nombre.length < 2) return responder(res, 400, { ok: false, error: "Escribe tu nombre y apellido." });
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(correo)) return responder(res, 400, { ok: false, error: "Revisa tu correo electrónico." });
   if (telefono.replace(/\D/g, "").length < 8) return responder(res, 400, { ok: false, error: "Escribe un teléfono de contacto." });
@@ -264,38 +273,33 @@ async function registrar(req, res) {
   const valor = Math.max(0, parseInt(libro.precio, 10) || 0);
 
   const creado = new Date().toISOString();
-  const pedido = "P-" + creado.slice(0, 10).replace(/-/g, "") + "-" + crypto.randomBytes(3).toString("hex").toUpperCase();
-  let codigos;
+  let codigo;
   try {
-    codigos = await guardar((pedidos) => {
+    codigo = await guardar((pedidos) => {
       const hora = Date.now() - 3600000;
       const recientes = pedidos.filter((p) => p.correo === correo && Date.parse(p.creado) > hora).length;
-      if (recientes + cantidad > 30) {
-        const err = new Error("Ya registraste muchos libros en la última hora. Escríbenos por WhatsApp para pedidos grandes.");
+      if (recientes >= MAX_COMPRAS_HORA) {
+        const err = new Error("Ya registraste muchas compras en la última hora. Escríbenos por WhatsApp.");
         err.publico = true;
         throw err;
       }
-      const usados = new Set(pedidos.map((p) => p.codigo));
-      const nuevos = [];
-      for (let i = 0; i < cantidad; i++) {
-        const codigo = nuevoCodigo(usados);
-        nuevos.push(codigo);
-        pedidos.push({
-          codigo, pedido, creado, libro: String(libro.titulo), color, formato, valor,
-          nombre, correo, telefono, comuna, dedicatoria,
-          estado: "Pendiente de pago", pago: "", envio: "", entrega: "",
-          residencia: "", notas: "", actualizado: creado, por: "web",
-          terminos: TERMINOS, // versión de los términos y condiciones que aceptó el comprador
-        });
-      }
-      return nuevos;
-    }, `Pedido ${pedido}: ${cantidad} × ${libro.titulo}`);
+      // Una compra = un registro = un código QR, sin importar cuántos libros sean.
+      const c = nuevoCodigo(new Set(pedidos.map((p) => p.codigo)));
+      pedidos.push({
+        codigo: c, creado, libro: String(libro.titulo), color, formato, cantidad, valor, // valor = precio de cada libro
+        nombre, correo, telefono, comuna, dedicatoria,
+        estado: "Pendiente de pago", pago: "", envio: "", entrega: "",
+        residencia: "", notas: "", actualizado: creado, por: "web",
+        terminos: TERMINOS, // versión de los términos y condiciones que aceptó el comprador
+      });
+      return c;
+    }, `Compra ${cantidad} × ${libro.titulo}${color ? " (" + color + ")" : ""}`);
   } catch (e) {
     if (e.publico) return responder(res, 409, { ok: false, error: e.message });
     console.error("[pedidos] registrar:", e.message, e.data || "");
     return responder(res, 502, { ok: false, error: "No pudimos registrar tu compra en este momento." });
   }
-  return responder(res, 200, { ok: true, pedido, codigos, libro: String(libro.titulo), color, formato, valor });
+  return responder(res, 200, { ok: true, codigo, codigos: [codigo], cantidad, libro: String(libro.titulo), color, formato, valor });
 }
 
 async function seguimiento(req, res, q) {
@@ -311,6 +315,7 @@ async function seguimiento(req, res, q) {
     libro: p.libro,
     color: p.color,
     formato: p.formato,
+    cantidad: cantidadDe(p),
     nombre: nombreCorto(p.nombre),
     estado: p.estado,
     fechas: { compra: p.creado, pago: p.pago, envio: p.envio, entrega: p.entrega },
@@ -335,7 +340,7 @@ async function actualizar(req, res) {
   for (const c of cambios) {
     if (c.estado !== undefined && !ESTADOS.includes(c.estado)) return responder(res, 400, { ok: false, error: `Estado no válido: ${c.estado}` });
   }
-  const resumen = cambios.length === 1 ? `${cambios[0].codigo}${cambios[0].estado ? " → " + cambios[0].estado : ""}` : `${cambios.length} libros${cambios[0].estado ? " → " + cambios[0].estado : ""}`;
+  const resumen = cambios.length === 1 ? `${cambios[0].codigo}${cambios[0].estado ? " → " + cambios[0].estado : ""}` : `${cambios.length} compras${cambios[0].estado ? " → " + cambios[0].estado : ""}`;
   try {
     const listos = await guardar((pedidos) => {
       const ahora = new Date().toISOString();

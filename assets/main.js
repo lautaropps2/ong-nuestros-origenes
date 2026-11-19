@@ -805,7 +805,8 @@
 
     /* QR con la marca de la ONG: assets/qr-ong.js */
     function drawQR(canvas, text){ return !!window.ongQR && window.ongQR.canvas(canvas, text, 8); }
-    function downloadQR(code, titulo){ if(window.ongQR) window.ongQR.descargar(trackLink(code), code, titulo); }
+    function downloadQR(code, titulo, cantidad){ if(window.ongQR) window.ongQR.descargar(trackLink(code), code, titulo, cantidad); }
+    function nLibros(n){ return num(n) + (n === 1 ? " libro" : " libros"); }
 
     /* Catálogo + ventana de compra (biblioteca.html) */
     function initLibros(d){
@@ -827,8 +828,24 @@
       initPilas(lista);
 
       var modal = $("#buy"), form = $("#buyForm"), done = $("#buyDone"), msg = $(".form__msg", form), send = $(".buy__send", form);
-      var cant = $("#b-cantidad"), cur = null, lastTrigger = null, openedAt = 0;
-      for(var k = 1; k <= 10; k++) cant.insertAdjacentHTML("beforeend", '<option value="' + k + '">' + k + (k === 1 ? " libro" : " libros") + '</option>');
+      var cant = $("#b-cantidad"), MAX_LIBROS = 5000, cur = null, lastTrigger = null, openedAt = 0;
+
+      // Cantidad de libros: número libre (1 a 5.000), botones − + y atajos. Una compra = un solo QR.
+      function cantVal(){ var v = String(cant.value).trim(); return /^\d+$/.test(v) ? parseInt(v, 10) : 0; }
+      function pintarTotal(){
+        var n = cantVal(), ok = n >= 1 && n <= MAX_LIBROS;
+        $("#buy-total").textContent = ok ? nLibros(n) : n > MAX_LIBROS ? "Máximo " + num(MAX_LIBROS) + " libros" : "Indica la cantidad";
+        $("#buy-total-v").textContent = !ok ? "" : cur && cur.precio ? "Total " + money(cur.precio * n) : "Valor por confirmar";
+        $$("[data-cant-set]", form).forEach(function(b){ b.classList.toggle("on", +b.getAttribute("data-cant-set") === n); });
+      }
+      function ponerCant(n){ cant.value = Math.max(1, Math.min(MAX_LIBROS, n)); pintarTotal(); }
+      form.addEventListener("click", function(e){
+        var b = e.target.closest("[data-cant], [data-cant-set]"); if(!b) return;
+        if(b.hasAttribute("data-cant-set")) ponerCant(+b.getAttribute("data-cant-set"));
+        else ponerCant((cantVal() || 1) + +b.getAttribute("data-cant"));
+      });
+      cant.addEventListener("input", pintarTotal);
+      cant.addEventListener("blur", function(){ if(cantVal() < 1) ponerCant(1); });
 
       function opts(id, name, values, withSwatch){
         var fs = $("#" + id), box = $(".opts__list", fs);
@@ -851,6 +868,7 @@
         tyc(false);
         opts("buy-colores", "color", cur.colores, true);
         opts("buy-formatos", "formato", cur.formatos, false);
+        ponerCant(1);
         msg.textContent = ""; form.hidden = false; done.hidden = true; done.innerHTML = "";
         send.disabled = false; send.textContent = "Confirmar compra";
         modal.hidden = false; document.body.classList.add("lock");
@@ -891,7 +909,7 @@
         var idx = -1; libros.forEach(function(l, i){ if(idx < 0 && slug(l.titulo) === pedido) idx = i; });
         if(idx >= 0) setTimeout(function(){ open(idx, $('[data-libro="' + idx + '"]', lista)); }, 250);
       }
-      done.addEventListener("click", function(e){ var b = e.target.closest("[data-dl]"); if(b) downloadQR(b.getAttribute("data-dl"), b.getAttribute("data-t") || ""); });
+      done.addEventListener("click", function(e){ var b = e.target.closest("[data-dl]"); if(b) downloadQR(b.getAttribute("data-dl"), b.getAttribute("data-t") || "", +b.getAttribute("data-n") || 1); });
       modal.addEventListener("click", function(e){ if(e.target === modal || e.target.closest("[data-close]")) close(); });
       document.addEventListener("keydown", function(e){
         if(modal.hidden) return;
@@ -907,12 +925,14 @@
         e.preventDefault();
         var f = form.elements, color = (form.querySelector("input[name=color]:checked") || {}).value || "";
         var formato = (form.querySelector("input[name=formato]:checked") || {}).value || "";
-        var p = { libro:cur.titulo, color:color, formato:formato, cantidad:parseInt(f.cantidad.value, 10) || 1,
+        var p = { libro:cur.titulo, color:color, formato:formato, cantidad:cantVal(),
                   nombre:f.nombre.value.trim(), correo:f.correo.value.trim(), telefono:f.telefono.value.trim(),
                   comuna:f.comuna.value.trim(), dedicatoria:f.dedicatoria.value.trim(), web:f.web.value, t:Date.now() - openedAt,
                   terminos:$("#b-ok").checked };
         var err = cur.colores.length && !color ? ["Elige el color del libro.", form.querySelector("input[name=color]")]
           : cur.formatos.length && !formato ? ["Elige el formato.", form.querySelector("input[name=formato]")]
+          : p.cantidad < 1 ? ["Indica cuántos libros quieres comprar.", cant]
+          : p.cantidad > MAX_LIBROS ? ["Para más de " + num(MAX_LIBROS) + " libros escríbenos por WhatsApp.", cant]
           : p.nombre.length < 2 ? ["Escribe tu nombre y apellido.", f.nombre]
           : !/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(p.correo) ? ["Revisa tu correo electrónico.", f.correo]
           : p.telefono.replace(/\D/g, "").length < 8 ? ["Escribe un teléfono de contacto.", f.telefono]
@@ -936,39 +956,42 @@
               return;
             }
             if(!res || !res.ok) throw new Error((res && res.error) || "");
-            if(!res.codigos || !res.codigos.length) throw new Error("");
+            if(!res.codigo && !(res.codigos && res.codigos.length)) throw new Error("");
             showDone(res, p);
           })
           .catch(function(x){
-            msg.innerHTML = esc(x && x.message ? x.message : "No pudimos registrar tu compra.") +
-              ' <a href="' + esc(waLink("Hola, quiero comprar «" + p.libro + "» para la Campaña Navidad 2026.")) + '" target="_blank" rel="noopener">Escríbenos por WhatsApp</a>.';
+            var m = x && x.message ? x.message : "No pudimos registrar tu compra.";
+            msg.innerHTML = esc(m) + ' <a href="' + esc(waLink("Hola, quiero comprar " + nLibros(p.cantidad || 1) + " «" + p.libro + "» para la Campaña Navidad 2026.")) +
+              '" target="_blank" rel="noopener">' + (/whatsapp/i.test(m) ? "Abrir WhatsApp" : "Escríbenos por WhatsApp") + '</a>.';
             send.disabled = false; send.textContent = "Confirmar compra";
           });
       });
 
+      // Compra registrada: UN código QR para toda la compra, sea de 1 o de 100 libros.
       function showDone(res, p){
-        var codes = res.codigos, total = (res.valor || 0) * codes.length, pago = d.pago || {};
-        var nombre = p.nombre.split(/\s+/)[0];
-        var wa = waLink("Hola, compré " + codes.length + (codes.length === 1 ? " libro" : " libros") + " «" + res.libro + "» para la Campaña Navidad 2026. " +
-          "Mi nombre es " + p.nombre + ". Código" + (codes.length === 1 ? ": " : "s: ") + codes.join(", ") + ". Les envío el comprobante de pago.");
+        var code = res.codigo || res.codigos[0], n = Math.max(1, parseInt(res.cantidad, 10) || p.cantidad || 1);
+        var total = (res.valor || 0) * n, pago = d.pago || {}, uno = n === 1;
+        var nombre = p.nombre.split(/\s+/)[0], libroTxt = "«" + res.libro + "»" + (res.color ? " (" + res.color + ")" : "");
+        var wa = waLink("Hola, compré " + nLibros(n) + " " + libroTxt + " para la Campaña Navidad 2026. " +
+          "Mi nombre es " + p.nombre + ". Código de mi compra: " + code + ". Les envío el comprobante de pago.");
         var link = /^https:\/\//.test(pago.link || "") ? pago.link : "";
         done.innerHTML =
           '<div class="done__ok"><svg aria-hidden="true"><use href="#i-check"/></svg></div>' +
           '<h2>¡Gracias, ' + esc(nombre) + '!</h2>' +
-          '<p>Registramos ' + (codes.length === 1 ? "tu libro" : codes.length + " libros") + ' «' + esc(res.libro) + '»' + (res.color ? ' (' + esc(res.color) + ')' : '') +
-          '. Cada libro tiene su propio código QR: escanéalo y mira el estado de envío hasta que llega a los niños de la residencia.</p>' +
-          '<div class="qrs">' + codes.map(function(c){
-            return '<div class="qr"><canvas data-qr="' + esc(c) + '" aria-label="Código QR del libro ' + esc(c) + '" role="img"></canvas><b>' + esc(c) + '</b>' +
-              '<div class="qr__acts"><button type="button" data-dl="' + esc(c) + '" data-t="' + esc(res.libro + (res.color ? " · " + res.color : "")) + '">Descargar QR</button>' +
-              '<a href="' + esc(trackLink(c)) + '" target="_blank" rel="noopener">Ver seguimiento</a></div></div>';
-          }).join("") + '</div>' +
+          '<p>Registramos tu compra de <b>' + esc(nLibros(n)) + '</b> ' + esc(libroTxt) + '. ' +
+          (uno ? 'Escanea tu código QR y mira el estado de envío hasta que llega a los niños de la residencia.'
+               : 'Tu código QR sirve para los ' + esc(num(n)) + ' libros: escanéalo y mira el estado de envío hasta que llegan a los niños de la residencia.') + '</p>' +
+          '<div class="qrs qrs--uno"><div class="qr"><canvas data-qr="' + esc(code) + '" aria-label="Código QR de tu compra ' + esc(code) + '" role="img"></canvas>' +
+            '<b>' + esc(code) + '</b><span class="qr__n">' + esc(nLibros(n)) + '</span>' +
+            '<div class="qr__acts"><button type="button" data-dl="' + esc(code) + '" data-n="' + n + '" data-t="' + esc(res.libro + (res.color ? " · " + res.color : "")) + '">Descargar QR</button>' +
+            '<a href="' + esc(trackLink(code)) + '" target="_blank" rel="noopener">Ver seguimiento</a></div></div></div>' +
           '<div class="pay"><h3>Completa tu compra</h3>' +
-          '<p><b>Total: ' + (total ? money(total) : "valor por confirmar") + '</b></p>' +
+          '<p><b>Total: ' + esc(nLibros(n)) + ' · ' + (total ? money(total) : "valor por confirmar") + '</b></p>' +
           (pago.instrucciones ? '<p>' + esc(pago.instrucciones) + '</p>' : '') +
           (pago.datos_transferencia ? '<p>' + esc(pago.datos_transferencia) + '</p>' : '') +
           '<div class="btns">' + (link ? '<a class="btn" href="' + esc(link) + '" target="_blank" rel="noopener">Pagar en línea</a>' : '') +
           '<a class="btn btn--wa" href="' + esc(wa) + '" target="_blank" rel="noopener"><svg aria-hidden="true"><use href="#wa"/></svg>Enviar por WhatsApp</a></div></div>' +
-          '<p>Tu libro suma a la meta cuando confirmemos el pago. <b>Guarda tus códigos:</b> descarga cada QR o toma una captura de pantalla.</p>' +
+          '<p>' + (uno ? 'Tu libro suma' : 'Tus libros suman') + ' a la meta cuando confirmemos el pago. <b>Guarda tu código:</b> descarga el QR o toma una captura de pantalla.</p>' +
           '<button class="btn btn--ghost" type="button" data-close>Cerrar</button>';
         $$("canvas[data-qr]", done).forEach(function(cv){ drawQR(cv, trackLink(cv.getAttribute("data-qr"))); });
         form.hidden = true; done.hidden = false; form.reset();
@@ -1007,10 +1030,11 @@
         setIcon(ICON[est] || "i-clock");
         $("[data-trk-title]", main).textContent =
           est === "Entregado" ? "¡Entregado!" : est === "Enviado" ? "En camino" : est === "Comprado" ? "Comprado" : est === "Anulado" ? "Pedido anulado" : "Compra registrada";
-        $("[data-trk-who]", main).textContent = "Libro de " + r.nombre + " · " + r.libro + (r.color ? " (" + r.color + ")" : "");
+        var n = Math.max(1, parseInt(r.cantidad, 10) || 1), uno = n === 1;
+        $("[data-trk-who]", main).textContent = "Compra de " + r.nombre + " · " + nLibros(n) + " «" + r.libro + "»" + (r.color ? " (" + r.color + ")" : "");
         $("[data-trk-note]", main).textContent =
-          est === "Pendiente de pago" ? "Estamos confirmando tu pago. Cuando lo confirmemos, tu libro suma a la meta de la campaña."
-          : est === "Entregado" ? "Tu libro llegó a las niñas, niños y adolescentes de la residencia. ¡Gracias por regalar lectura!"
+          est === "Pendiente de pago" ? "Estamos confirmando tu pago. Cuando lo confirmemos, " + (uno ? "tu libro suma" : "tus " + num(n) + " libros suman") + " a la meta de la campaña."
+          : est === "Entregado" ? (uno ? "Tu libro llegó" : "Tus " + num(n) + " libros llegaron") + " a las niñas, niños y adolescentes de la residencia. ¡Gracias por regalar lectura!"
           : est === "Anulado" ? "Si crees que es un error, escríbenos por WhatsApp al +56 9 2617 5941." : "";
         var fechas = { "Comprado": r.fechas && r.fechas.pago, "Enviado": r.fechas && r.fechas.envio, "Entregado": r.fechas && r.fechas.entrega };
         $$("[data-paso]", main).forEach(function(li, i){
@@ -1022,7 +1046,7 @@
         document.title = ($("[data-trk-title]", main).textContent) + " · Seguimiento · ONG Nuestros Orígenes";
         paintStats(stats, d.campana.meta, r.estadisticas || null);
       }).catch(function(){
-        notFound("No pudimos consultar tu libro. Intenta de nuevo en unos minutos");
+        notFound("No pudimos consultar tu compra. Intenta de nuevo en unos minutos");
       });
     }
   }, "biblioteca");
