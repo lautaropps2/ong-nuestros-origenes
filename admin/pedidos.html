@@ -98,6 +98,15 @@ b.cant{display:table;margin:0 0 4px;padding:1px 9px;border-radius:999px;backgrou
 .inp:focus,.est select:focus,.tools input:focus,.tools select:focus{outline:3px solid rgba(29,91,216,.35);outline-offset:1px}
 .qrb{background:none;border:1.5px solid var(--line);border-radius:10px;min-height:36px;padding:0 .7rem;cursor:pointer;font-family:var(--display);font-weight:500;font-size:.85rem;white-space:nowrap}
 .qrb:hover{border-color:var(--ink)}
+td.acts{white-space:nowrap}
+/* tacho de basura: eliminar o descartar una compra */
+.del{display:inline-grid;place-items:center;width:36px;height:36px;margin-left:6px;vertical-align:top;border-radius:10px;border:1.5px solid #F5C7C4;background:#FFF4F3;color:var(--red);cursor:pointer;transition:background .2s,border-color .2s,color .2s}
+.del:hover,.del:focus-visible{background:var(--red);border-color:var(--red);color:#fff}
+.del:focus-visible{outline:3px solid rgba(227,18,11,.35);outline-offset:1px}
+.del svg{width:18px;height:18px}
+.btn--del{background:var(--red);color:#fff}
+.btn--del:hover{background:#C40F09}
+tr.bye td{opacity:.35;transition:opacity .3s}
 .empty{padding:40px 20px;text-align:center;color:var(--muted)}
 
 @media (max-width:980px){
@@ -111,7 +120,10 @@ b.cant{display:table;margin:0 0 4px;padding:1px 9px;border-radius:999px;backgrou
 }
 
 .bulk{position:sticky;bottom:12px;z-index:15;margin-top:12px;background:var(--ink);color:#fff;border-radius:16px;padding:10px 14px;display:flex;flex-wrap:wrap;align-items:center;gap:10px;box-shadow:0 18px 40px -20px rgba(0,0,0,.6)}
-.bulk select{min-height:40px;border-radius:999px;border:0;padding:0 .9rem}
+/* la barra es oscura: el menú y sus opciones van con texto oscuro sobre blanco (si no, se ven en blanco) */
+.bulk select{min-height:40px;border-radius:999px;border:0;padding:0 .9rem;background:#fff;color:var(--ink);font-weight:500}
+.bulk select option{background:#fff;color:var(--ink)}
+.bulk .btn--del{margin-left:4px}
 .bulk b{font-family:var(--display)}
 .bulk .x{background:none;border:0;color:#fff;text-decoration:underline;cursor:pointer;margin-left:auto}
 
@@ -198,6 +210,7 @@ dialog::backdrop{background:rgba(5,5,6,.55)}
         <option value="Anulado">Marcar: Anulado</option>
       </select>
       <button class="btn btn--y" type="button" id="bulkGo">Aplicar</button>
+      <button class="btn btn--del" type="button" id="bulkDel"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6M10 11v6M14 11v6"/></svg>Eliminar</button>
       <button class="x" type="button" id="bulkX">Quitar selección</button>
     </div>
   </section>
@@ -224,7 +237,7 @@ dialog::backdrop{background:rgba(5,5,6,.55)}
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
 <script src="/assets/vendor/qrcode.js"></script>
-<script src="/assets/qr-ong.js?v=20261119d"></script>
-<script src="/admin/pedidos.js?v=20261119d"></script>
+<script src="/assets/qr-ong.js?v=20261119e"></script>
+<script src="/admin/pedidos.js?v=20261119e"></script>
 </body>
 </html>

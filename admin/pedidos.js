@@ -137,6 +137,7 @@
   // Cada registro es UNA compra con "cantidad" libros y un solo código QR (los antiguos, sin cantidad, valen 1).
   function cant(p) { return Math.max(1, parseInt(p && p.cantidad, 10) || 1); }
   function nLibros(n) { return num(n) + (n === 1 ? " libro" : " libros"); }
+  var TACHO = '<svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6M10 11v6M14 11v6"/></svg>';
 
   function pintarTiles() {
     // Todo se cuenta en LIBROS: una compra de 100 libros suma 100.
@@ -178,7 +179,8 @@
         (fechas ? '<div class="fechas">' + esc(fechas) + '</div>' : "") + '</td>' +
       '<td data-l="Residencia y notas (internas)"><input class="inp" data-f="residencia" value="' + esc(p.residencia || "") + '" placeholder="Residencia / hogar" maxlength="120" aria-label="Residencia de ' + esc(p.codigo) + '">' +
         '<input class="inp" data-f="notas" value="' + esc(p.notas || "") + '" placeholder="Notas" maxlength="500" aria-label="Notas de ' + esc(p.codigo) + '"></td>' +
-      '<td class="acts"><button class="qrb" type="button" data-qr>QR</button></td></tr>';
+      '<td class="acts"><button class="qrb" type="button" data-qr>QR</button>' +
+        '<button class="del" type="button" data-del title="Eliminar compra" aria-label="Eliminar la compra ' + esc(p.codigo) + '">' + TACHO + '</button></td></tr>';
   }
 
   function pintar() {
@@ -236,15 +238,44 @@
     }
   });
   $("#rows").addEventListener("click", function (e) {
-    var b = e.target.closest("[data-qr]"); if (!b) return;
-    abrirQR(porCodigo[b.closest("tr").getAttribute("data-c")]);
+    var b = e.target.closest("[data-qr]");
+    if (b) { abrirQR(porCodigo[b.closest("tr").getAttribute("data-c")]); return; }
+    var d = e.target.closest("[data-del]");
+    if (d) eliminar([d.closest("tr").getAttribute("data-c")]);
   });
+
+  /* ---------------- eliminar (tacho de basura) ---------------- */
+  // Quita compras de prueba, duplicadas o descartadas: salen del panel, del Excel y de la meta, y su QR deja de funcionar.
+  function eliminar(cods) {
+    cods = cods.filter(function (c) { return porCodigo[c]; });
+    if (!cods.length) return Promise.resolve();
+    var libros = cods.reduce(function (s, c) { return s + cant(porCodigo[c]); }, 0), p = porCodigo[cods[0]];
+    var que = cods.length === 1
+      ? "la compra " + p.codigo + " de " + p.nombre + " (" + nLibros(cant(p)) + " «" + p.libro + "»)"
+      : cods.length + " compras (" + nLibros(libros) + ")";
+    if (!confirm("¿Eliminar " + que + "?\n\nSe quita del panel, del Excel y de la meta, y su código QR deja de funcionar.")) return Promise.resolve();
+    cods.forEach(function (c) { var tr = $('tr[data-c="' + c + '"]'); if (tr) tr.classList.add("bye"); });
+    return api("?accion=eliminar", { codigos: cods }).then(function (d) {
+      if (!d.ok) throw new Error(d.error || "No se pudo eliminar");
+      var fuera = {}; (d.eliminados || cods).forEach(function (c) { fuera[c] = 1; delete porCodigo[c]; delete sel[c]; });
+      DATA = DATA.filter(function (x) { return !fuera[x.codigo]; });
+      pintar();
+      toast(cods.length === 1 ? "Compra eliminada" : cods.length + " compras eliminadas");
+    }).catch(function (e) {
+      toast((e && e.message) || "No se pudo eliminar", true);
+      pintar();
+    });
+  }
   $("#all").addEventListener("change", function () {
     var on = this.checked;
     filtrados().forEach(function (p) { if (on) sel[p.codigo] = 1; else delete sel[p.codigo]; });
     pintar();
   });
   $("#bulkX").addEventListener("click", function () { sel = {}; pintar(); });
+  $("#bulkDel").addEventListener("click", function () {
+    var b = this; b.disabled = true;
+    eliminar(Object.keys(sel)).then(function () { b.disabled = false; });
+  });
   $("#bulkGo").addEventListener("click", function () {
     var est = $("#bulkE").value, cods = Object.keys(sel);
     if (!cods.length) return;

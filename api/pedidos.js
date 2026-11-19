@@ -17,6 +17,7 @@
 //                                                    sea de 1 o de 1.000 libros (campo "cantidad")
 //   GET  /api/pedidos?accion=lista                   panel: todos los pedidos (requiere login de GitHub)
 //   POST /api/pedidos?accion=actualizar              panel: cambia estado, residencia o notas
+//   POST /api/pedidos?accion=eliminar                panel: elimina compras (tacho de basura)
 const crypto = require("crypto");
 
 const API = process.env.GITHUB_API || "https://api.github.com";
@@ -375,6 +376,31 @@ async function actualizar(req, res) {
   }
 }
 
+// Elimina compras (pruebas, duplicados o descartadas). Quedan en el historial del repositorio privado,
+// así que si se borra una por error se puede recuperar desde GitHub.
+async function eliminar(req, res) {
+  const login = await administrador(req);
+  if (!login) return responder(res, 401, { ok: false, error: "Tu usuario de GitHub no tiene permiso para eliminar compras." });
+  let b;
+  try { b = await leerCuerpo(req); } catch (e) { return responder(res, 400, { ok: false, error: "Solicitud no válida." }); }
+  const codigos = [...new Set((Array.isArray(b.codigos) ? b.codigos : []).map((c) => String(c || "").toUpperCase()))].slice(0, 500);
+  if (!codigos.length) return responder(res, 400, { ok: false, error: "No hay compras para eliminar." });
+  const resumen = codigos.length === 1 ? codigos[0] : `${codigos.length} compras`;
+  try {
+    const eliminados = await guardar((pedidos) => {
+      const fuera = [];
+      for (let i = pedidos.length - 1; i >= 0; i--) {
+        if (codigos.includes(pedidos[i].codigo)) { fuera.push(pedidos[i].codigo); pedidos.splice(i, 1); }
+      }
+      return fuera;
+    }, `Panel (${login}): elimina ${resumen}`);
+    return responder(res, 200, { ok: true, eliminados });
+  } catch (e) {
+    console.error("[pedidos] eliminar:", e.message, e.data || "");
+    return responder(res, 502, { ok: false, error: e.publico ? e.message : "No se pudo eliminar. Intenta de nuevo." });
+  }
+}
+
 module.exports = async (req, res) => {
   const q = new URL(req.url, "https://localhost").searchParams;
   const accion = q.get("accion") || "";
@@ -389,6 +415,7 @@ module.exports = async (req, res) => {
     if (req.method === "GET" && accion === "seguimiento") return await seguimiento(req, res, q);
     if (req.method === "GET" && accion === "lista") return await lista(req, res);
     if (req.method === "POST" && accion === "actualizar") return await actualizar(req, res);
+    if (req.method === "POST" && accion === "eliminar") return await eliminar(req, res);
     if (req.method === "POST" && !accion) return await registrar(req, res);
     return responder(res, 404, { ok: false, error: "Acción no válida." });
   } catch (e) {
