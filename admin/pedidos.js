@@ -258,29 +258,10 @@
   }
 
   /* ---------------- QR ---------------- */
-  function matriz(text) { var q = window.qrcode(0, "M"); q.addData(text); q.make(); return q; }
-  function dibujar(cv, text, m) {
-    var q = matriz(text), n = q.getModuleCount(), quiet = 3, size = (n + quiet * 2) * m;
-    cv.width = cv.height = size; var g = cv.getContext("2d");
-    g.fillStyle = "#fff"; g.fillRect(0, 0, size, size); g.fillStyle = "#050506";
-    for (var r = 0; r < n; r++) for (var c = 0; c < n; c++) if (q.isDark(r, c)) g.fillRect((c + quiet) * m, (r + quiet) * m, m, m);
-  }
+  // QR con la marca de la ONG: /assets/qr-ong.js (el mismo que recibe el comprador)
   function descargarQR(p) {
-    var W = 720, H = 900, cv = document.createElement("canvas"); cv.width = W; cv.height = H;
-    var g = cv.getContext("2d"), font = '"Space Grotesk", Arial, sans-serif';
-    g.fillStyle = "#fff"; g.fillRect(0, 0, W, H);
-    ["#E3120B", "#00A651", "#F7D417", "#050506"].forEach(function (col, i) { g.fillStyle = col; g.fillRect(i * W / 4, 0, W / 4, 16); });
-    g.textAlign = "center"; g.fillStyle = "#050506"; g.font = "700 30px " + font; g.fillText("ONG Nuestros Orígenes", W / 2, 78);
-    g.font = "500 22px " + font; g.fillStyle = "#55554F"; g.fillText("CAMPAÑA SOLIDARIA NAVIDAD 2026", W / 2, 114);
-    var q = matriz(TRACK + p.codigo), n = q.getModuleCount(), m = Math.floor(500 / (n + 6)), x0 = Math.round((W - n * m) / 2), y0 = 140 + Math.round((500 - n * m) / 2);
-    g.fillStyle = "#050506";
-    for (var r = 0; r < n; r++) for (var c = 0; c < n; c++) if (q.isDark(r, c)) g.fillRect(x0 + c * m, y0 + r * m, m, m);
-    g.font = "700 40px " + font; g.fillText(p.codigo, W / 2, 700);
-    g.font = "400 24px " + font; g.fillStyle = "#55554F";
-    g.fillText(p.libro.length > 46 ? p.libro.slice(0, 44) + "…" : p.libro, W / 2, 744);
-    g.fillText("Escanéame para seguir este libro hasta la residencia", W / 2, 790);
-    g.font = "500 22px " + font; g.fillStyle = "#00A651"; g.fillText("nuestrosorigenes.cl", W / 2, 850);
-    cv.toBlob(function (blob) { if (blob) bajar(blob, "libro-" + p.codigo + ".png"); }, "image/png");
+    window.ongQR.tarjeta(TRACK + p.codigo, p.codigo, p.libro + (p.color ? " · " + p.color : ""))
+      .toBlob(function (blob) { if (blob) bajar(blob, "libro-" + p.codigo + ".png"); }, "image/png");
   }
   function telWA(t) {
     var d = String(t || "").replace(/\D/g, "");
@@ -294,7 +275,7 @@
     var dlg = $("#dlg"), link = TRACK + p.codigo;
     $("#dlg-t").textContent = p.codigo;
     $("#dlg-d").textContent = p.libro + (p.color ? " (" + p.color + ")" : "") + " · " + p.nombre + " · " + p.estado;
-    dibujar($("#dlg-qr"), link, 6);
+    window.ongQR.canvas($("#dlg-qr"), link, 10);
     var tel = telWA(p.telefono), wa = $("#dlg-wa");
     wa.hidden = !tel;
     if (tel) wa.href = "https://wa.me/" + tel + "?text=" + encodeURIComponent("Hola " + String(p.nombre).split(" ")[0] + ", gracias por regalar un libro en la Campaña Navidad 2026 de ONG Nuestros Orígenes. Aquí puedes seguir tu libro «" + p.libro + "» (código " + p.codigo + "): " + link);

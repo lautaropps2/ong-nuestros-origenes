@@ -34,7 +34,7 @@
     <div class="sh rv"><p class="eyebrow">Cómo funciona</p><h2 id="pasos-t">Más que un libro</h2></div>
     <ol class="helps steps" data-stagger>
       <li class="lcard c-red"><div class="circle"><svg aria-hidden="true"><use href="#i-book"/></svg></div><h3>1. Elige tu libro</h3><p>Escoge un ejemplar de la Biblioteca del Barrio, en formato físico o digital, y completa tus datos.</p></li>
-      <li class="lcard c-ink"><div class="circle"><svg aria-hidden="true"><use href="#i-qr"/></svg></div><h3>2. Rastrea con QR</h3><p>Al terminar tu compra recibes un código QR por cada libro. Escanéalo y mira cuándo se compra, se envía y llega a la residencia.</p></li>
+      <li class="lcard c-ink"><div class="circle"><svg aria-hidden="true"><use href="#i-qr"/></svg></div><h3>2. Rastrea con QR</h3><p>Al completar tu compra recibes un código QR por cada libro. Escanéalo y mira el estado de envío hasta que llega a los niños de la residencia.</p></li>
       <li class="lcard c-green"><div class="circle"><svg aria-hidden="true"><use href="#i-star"/></svg></div><h3>3. Talleres de verano</h3><p>Tu aporte también financia talleres de cuentacuentos y emprendimiento sustentable en la “Resi”, para que el libro no quede olvidado en un rincón.</p></li>
     </ol>
   </div>
@@ -57,7 +57,7 @@
       <div>
         <svg class="big-ic" aria-hidden="true"><use href="#i-qr"/></svg>
         <h2 id="track-t">¿Ya regalaste un libro?</h2>
-        <p>Escanea tu código QR o escribe el código que te enviamos por correo.</p>
+        <p>Escanea tu código QR o escribe el código de tu libro (por ejemplo NAV-7K3M-Q9PX).</p>
       </div>
       <form class="track-form" action="seguimiento.html" method="get">
         <label class="sr-only" for="track-code">Código del libro</label>
@@ -94,7 +94,7 @@
     <button class="ibtn modal__x" type="button" data-close aria-label="Cerrar"><svg aria-hidden="true"><use href="#i-x"/></svg></button>
     <form class="buy" id="buyForm" novalidate>
       <div class="buy__book">
-        <img id="buy-img" src="" alt="">
+        <div class="buy__cover" id="buy-cover" hidden></div>
         <div><p class="eyebrow">Navidad 2026</p><h2 id="buy-t"></h2><p class="buy__by" id="buy-by"></p><p class="price" id="buy-price"></p></div>
       </div>
       <fieldset class="opts" id="buy-colores"><legend>Color</legend><div class="opts__list"></div></fieldset>
@@ -108,7 +108,27 @@
       </div>
       <div class="field"><label for="b-dedicatoria">Dedicatoria para quien recibe el libro (opcional)</label><textarea id="b-dedicatoria" name="dedicatoria" maxlength="300" rows="3" placeholder="Ej.: ¡Feliz Navidad! Que este libro te acompañe."></textarea></div>
       <div class="hp" aria-hidden="true"><label for="b-web">No llenar</label><input id="b-web" name="web" tabindex="-1" autocomplete="off"></div>
-      <label class="check"><input type="checkbox" id="b-ok" required> <span>Acepto que ONG Nuestros Orígenes use estos datos solo para esta compra y su seguimiento.</span></label>
+      <!-- Términos y condiciones: se abren al pasar el cursor por el enlace o al tocarlo -->
+      <div class="tyc">
+        <input type="checkbox" id="b-ok" required>
+        <p class="tyc__t"><label for="b-ok">He leído y acepto los</label> <button class="tyc__lnk" type="button" aria-expanded="false" aria-controls="tyc-pop">términos y condiciones</button> <label for="b-ok">de la campaña.</label></p>
+        <div class="tyc__pop" id="tyc-pop" role="region" aria-labelledby="tyc-h">
+          <button class="tyc__x" type="button" aria-label="Cerrar términos y condiciones"><svg aria-hidden="true"><use href="#i-x"/></svg></button>
+          <h3 id="tyc-h">Términos y condiciones</h3>
+          <p class="tyc__sub">Campaña Solidaria Navidad 2026 · Biblioteca del Barrio · ONG Nuestros Orígenes</p>
+          <ol>
+            <li><b>Destino de los libros.</b> Los libros que compras en esta campaña se donan a ONG Nuestros Orígenes, que los reparte en residencias de niñas, niños y adolescentes de Chile. No se envían a tu domicilio.</li>
+            <li><b>Distribución.</b> La ONG asigna cada libro según las necesidades de cada residencia, como la edad y la cantidad de niñas, niños y adolescentes. No es posible elegir una residencia ni a una persona en particular. Las entregas se hacen durante la campaña y sus fechas pueden variar por razones de logística.</li>
+            <li><b>Pago y meta.</b> Tu compra queda «Pendiente de pago» hasta que confirmemos el pago. Solo los libros pagados suman a la meta de la campaña. Te informamos el valor de cada libro antes de que pagues.</li>
+            <li><b>Seguimiento con código QR.</b> Cada libro tiene un código único. Al escanearlo verás su estado (Comprado, Enviado y Entregado), las fechas y tu nombre abreviado. Nunca se muestran tu correo ni tu teléfono.</li>
+            <li><b>Resguardo de niñas, niños y adolescentes.</b> Para proteger su identidad, no publicamos ni compartimos sus nombres, sus fotografías ni la ubicación de las residencias.</li>
+            <li><b>Dedicatoria.</b> Si escribes una, la incluiremos cuando sea posible. Podemos omitir textos que no sean adecuados para menores de edad o que incluyan datos de contacto.</li>
+            <li><b>Tus datos personales.</b> Usamos tu nombre, correo, teléfono y comuna solo para gestionar esta compra, coordinar el pago y mantener el seguimiento, conforme a la normativa chilena de protección de datos personales. No los vendemos ni los compartimos con terceros. Puedes pedir que los corrijamos o eliminemos escribiéndonos por WhatsApp al +56 9 2617 5941.</li>
+            <li><b>Cambios o anulaciones.</b> Si necesitas cambiar o anular una compra, escríbenos antes de que el libro sea enviado y lo revisamos contigo.</li>
+          </ol>
+          <p class="tyc__f">Al marcar la casilla declaras que leíste y aceptas estos términos. Versión del 19 de noviembre de 2026.</p>
+        </div>
+      </div>
       <p class="form__msg" role="status" aria-live="polite"></p>
       <button class="btn btn--ink buy__send" type="submit">Confirmar compra</button>
     </form>

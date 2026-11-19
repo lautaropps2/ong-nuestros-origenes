@@ -26,6 +26,7 @@ const FILE = "pedidos.json";
 const ESTADOS = ["Pendiente de pago", "Comprado", "Enviado", "Entregado", "Anulado"];
 const CONFIRMADOS = ["Comprado", "Enviado", "Entregado"];
 const MAX_POR_PEDIDO = 10;
+const TERMINOS = "2026-11-19"; // fecha de la versión de los términos en biblioteca.html (súbela si cambian)
 const ALFABETO = "ABCDEFGHJKMNPQRSTUVWXYZ23456789"; // sin 0/O, 1/I/L para que se lea fácil
 
 /* ---------------- GitHub ---------------- */
@@ -248,6 +249,7 @@ async function registrar(req, res) {
   if (nombre.length < 2) return responder(res, 400, { ok: false, error: "Escribe tu nombre y apellido." });
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(correo)) return responder(res, 400, { ok: false, error: "Revisa tu correo electrónico." });
   if (telefono.replace(/\D/g, "").length < 8) return responder(res, 400, { ok: false, error: "Escribe un teléfono de contacto." });
+  if (b.terminos !== true) return responder(res, 400, { ok: false, error: "Para continuar, acepta los términos y condiciones." });
 
   let libros;
   try { libros = await leerCatalogo(req); } catch (e) { return responder(res, 503, { ok: false, error: "No pudimos cargar el catálogo. Intenta de nuevo en un momento." }); }
@@ -283,6 +285,7 @@ async function registrar(req, res) {
           nombre, correo, telefono, comuna, dedicatoria,
           estado: "Pendiente de pago", pago: "", envio: "", entrega: "",
           residencia: "", notas: "", actualizado: creado, por: "web",
+          terminos: TERMINOS, // versión de los términos y condiciones que aceptó el comprador
         });
       }
       return nuevos;

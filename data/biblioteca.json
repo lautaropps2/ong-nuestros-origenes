@@ -14,8 +14,18 @@
     {
       "titulo": "Un emprendimiento para cada día",
       "autor": "CEmprendedor",
-      "portada": "assets/img/libros/emprendimiento-par.jpg",
-      "precio": 14990,
+      "portada": "assets/img/libros/emprendimiento-rojo.webp",
+      "tapas": [
+        {
+          "color": "Amarillo",
+          "imagen": "assets/img/libros/emprendimiento-amarillo.webp"
+        },
+        {
+          "color": "Rojo",
+          "imagen": "assets/img/libros/emprendimiento-rojo.webp"
+        }
+      ],
+      "precio": 0,
       "colores": ["Rojo", "Amarillo"],
       "formatos": ["Físico"],
       "descripcion": "Un libro para niños y familias con 365 historias reales de emprendedores, fundaciones y personas inspiradoras de Chile, una para cada día del año. Invita a descubrir valores como la creatividad, la resiliencia y el espíritu emprendedor, y a soñar en grande desde pequeños.",

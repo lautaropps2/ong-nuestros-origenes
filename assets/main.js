@@ -21,6 +21,66 @@
     else if(!e.shiftKey && document.activeElement === last){ e.preventDefault(); first.focus(); }
   }
 
+  /* ---------- Libros con varias tapas (p. ej. Amarillo y Rojo) ----------
+     Las tapas se ven una sobre otra; al pasar el cursor se barajan (primero la de la lista, luego la siguiente…)
+     y al salir vuelve adelante la última. En celulares, tocar la imagen cambia de tapa. */
+  var COLORES = { rojo:"#E3120B", amarillo:"#F7D417", verde:"#00A651", azul:"#1D5BD8", negro:"#0A0A0A", blanco:"#FFFFFF",
+                  rosado:"#E91E78", naranjo:"#F28C28", morado:"#7B3FA0", celeste:"#5BC0EB", gris:"#9A9890" };
+  function normal(s){ return String(s).toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim(); }
+  function swatch(name){ return COLORES[normal(name)] || "#C9C7BF"; }
+  function tapasDe(x){
+    return ((x && x.tapas) || []).filter(function(t){ return t && t.imagen; }).map(function(t){
+      return { color:String(t.color || ""), img:mediaPath(t.imagen) };
+    }).filter(function(t){ return t.img; });
+  }
+  function pilaHTML(tapas, titulo){
+    var n = tapas.length, nombres = tapas.map(function(t){ return normal(t.color); }).filter(Boolean);
+    return '<div class="pila" data-pila data-front="' + (n - 1) + '" role="img" aria-label="' +
+        esc("Portada de " + titulo + (nombres.length ? ", en tapa " + nombres.join(" y ") : "")) + '">' +
+      tapas.map(function(t, i){
+        return '<img class="pila__b' + (i === n - 1 ? ' is-front' : '') + '" src="' + esc(t.img) + '" alt="" data-color="' + esc(t.color) + '" decoding="async" draggable="false">';
+      }).join("") +
+      '<span class="pila__dots" aria-hidden="true">' + tapas.map(function(t, i){
+        return '<i' + (i === n - 1 ? ' class="on"' : '') + ' style="--sw:' + swatch(t.color) + '"></i>';
+      }).join("") + '</span></div>';
+  }
+  function pilaMostrar(st, i, animar){
+    var bs = $$(".pila__b", st);
+    if(!bs[i] || +st.getAttribute("data-front") === i) return;
+    st.setAttribute("data-front", i);
+    bs.forEach(function(b, j){
+      var era = b.classList.contains("is-front");
+      b.classList.remove("to-front", "to-back");
+      b.classList.toggle("is-front", j === i);
+      if(animar && !reduce && (j === i || era)){ void b.offsetWidth; b.classList.add(j === i ? "to-front" : "to-back"); }
+    });
+    $$(".pila__dots i", st).forEach(function(d, j){ d.classList.toggle("on", j === i); });
+  }
+  function pilaColor(st, color){
+    var bs = $$(".pila__b", st), k = -1;
+    bs.forEach(function(b, j){ if(k < 0 && normal(b.getAttribute("data-color")) === normal(color)) k = j; });
+    if(k >= 0) pilaMostrar(st, k, true);
+  }
+  function initPilas(root){
+    $$("[data-pila]", root).forEach(function(st){
+      if(st.getAttribute("data-on")) return;
+      st.setAttribute("data-on", "1");
+      var n = $$(".pila__b", st).length, t = null, zona = st.closest(".book, .card") || st;
+      if(n < 2) return;
+      function sig(){ pilaMostrar(st, (+st.getAttribute("data-front") + 1) % n, true); }
+      zona.addEventListener("pointerenter", function(e){
+        if(e.pointerType !== "mouse" || st.hasAttribute("data-fija")) return;
+        clearInterval(t); pilaMostrar(st, 0, true); t = setInterval(sig, 1700);
+      });
+      zona.addEventListener("pointerleave", function(e){
+        if(e.pointerType !== "mouse" || !t) return;
+        clearInterval(t); t = null; pilaMostrar(st, n - 1, true);
+      });
+      st.addEventListener("click", function(){ if(!t && !st.hasAttribute("data-fija")) sig(); });
+      st.addEventListener("animationend", function(e){ e.target.classList.remove("to-front", "to-back"); });
+    });
+  }
+
   /* ---------- Header ---------- */
   safe(function(){
     var h = $(".hdr"); if(!h) return;
@@ -480,7 +540,7 @@
             var slug = slugify(x.titulo) || "libro";
             return { id:"libro-" + slug, cat:"libros", name:String(x.titulo), book:true,
                      desc:[x.autor, x.detalle].filter(Boolean).join(" · "),
-                     price:Math.max(0, parseInt(x.precio, 10) || 0), img:mediaPath(x.portada), href:"biblioteca.html?libro=" + slug };
+                     price:Math.max(0, parseInt(x.precio, 10) || 0), img:mediaPath(x.portada), tapas:tapasDe(x), href:"biblioteca.html?libro=" + slug };
           });
         })
         .catch(function(){ return []; });
@@ -523,7 +583,8 @@
         var c = CATS[p.cat];
         if(p.book){
           return '<li class="card rv" style="--d:' + ((k % 4) * 0.07) + 's" data-cat="libros">' +
-            '<div class="card__th card__th--book">' + (p.img ? '<img class="card__img" src="' + esc(p.img) + '" alt="Portada de ' + esc(p.name) + '" loading="lazy" decoding="async">' : '') +
+            '<div class="card__th card__th--book">' + (p.tapas.length > 1 ? pilaHTML(p.tapas, p.name)
+              : p.img ? '<img class="card__img" src="' + esc(p.img) + '" alt="Portada de ' + esc(p.name) + '" loading="lazy" decoding="async">' : '') +
             '<span class="card__cat" style="--cc:' + c.color + '">' + esc(c.label) + '</span></div>' +
             '<div class="card__b"><h3>' + esc(p.name) + '</h3><p>' + esc(p.desc) + '</p>' +
             '<div class="card__f">' + (p.price ? '<span class="price">' + money(p.price) + '</span>' : '<span class="price price--soft">Valor por confirmar</span>') +
@@ -540,6 +601,7 @@
           '<div class="card__f"><span class="price">' + money(p.price) + '</span>' +
           '<button class="add" type="button" data-id="' + p.id + '" aria-label="Agregar ' + esc(p.name) + ' al carrito">Agregar</button></div></div></li>';
       }).join("");
+      initPilas(grid);
       if("IntersectionObserver" in window){
         var io = new IntersectionObserver(function(en){ en.forEach(function(x){ if(x.isIntersecting){ x.target.classList.add("in"); io.unobserve(x.target); } }); }, {threshold:0.05});
         $$(".card", grid).forEach(function(c){ io.observe(c); });
@@ -651,9 +713,6 @@
 
     var LOCAL = /^(localhost|127\.0\.0\.1)$/.test(location.hostname);
     var TRACK_URL = LOCAL ? new URL("seguimiento.html", location.href).href : "https://www.nuestrosorigenes.cl/seguimiento";
-    var COLORES = { rojo:"#E3120B", amarillo:"#F7D417", verde:"#00A651", azul:"#1D5BD8", negro:"#0A0A0A", blanco:"#FFFFFF",
-                    rosado:"#E91E78", naranjo:"#F28C28", morado:"#7B3FA0", celeste:"#5BC0EB", gris:"#9A9890" };
-    function swatch(name){ return COLORES[String(name).toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "")] || "#C9C7BF"; }
     function num(n){ try{ return Number(n).toLocaleString("es-CL"); }catch(e){ return String(n); } }
     function getJSON(url){ return fetch(url, {cache:"no-store"}).then(function(r){ if(!r.ok) throw new Error(r.status); return r.json(); }); }
     // La API responde JSON también en los errores (p. ej. {ok:false, sinConfig:true} si aún no está conectada).
@@ -678,7 +737,7 @@
         campana: { meta: Math.max(1, parseInt(c.meta, 10) || 5183), activa: c.activa !== false },
         pago: b.pago || {},
         libros: (b.libros || []).filter(function(l){ return l && l.titulo && l.disponible !== false; }).map(function(l){
-          return { titulo:String(l.titulo), autor:String(l.autor || ""), portada:mediaPath(l.portada), detalle:String(l.detalle || ""),
+          return { titulo:String(l.titulo), autor:String(l.autor || ""), portada:mediaPath(l.portada), tapas:tapasDe(l), detalle:String(l.detalle || ""),
                    descripcion:String(l.descripcion || ""), precio:Math.max(0, parseInt(l.precio, 10) || 0),
                    colores:(l.colores || []).map(String).filter(Boolean), formatos:(l.formatos || []).map(String).filter(Boolean) };
         })
@@ -719,46 +778,9 @@
       if(trk) safe(function(){ initSeguimiento(d); }, "biblioteca-seguimiento");
     });
 
-    /* QR */
-    function qrMatrix(text){
-      if(typeof window.qrcode !== "function") return null;
-      var q = window.qrcode(0, "M"); q.addData(text); q.make(); return q;
-    }
-    function drawQR(canvas, text, scale){
-      var q = qrMatrix(text); if(!q) return false;
-      var n = q.getModuleCount(), quiet = 3, size = (n + quiet * 2) * scale;
-      canvas.width = canvas.height = size;
-      var g = canvas.getContext("2d");
-      g.fillStyle = "#fff"; g.fillRect(0, 0, size, size); g.fillStyle = "#050506";
-      for(var r = 0; r < n; r++) for(var c = 0; c < n; c++) if(q.isDark(r, c)) g.fillRect((c + quiet) * scale, (r + quiet) * scale, scale, scale);
-      return true;
-    }
-    function downloadQR(code, titulo){
-      var W = 720, H = 900, cv = document.createElement("canvas"); cv.width = W; cv.height = H;
-      var g = cv.getContext("2d"), font = '"Space Grotesk", Arial, sans-serif';
-      g.fillStyle = "#fff"; g.fillRect(0, 0, W, H);
-      ["#E3120B", "#00A651", "#F7D417", "#050506"].forEach(function(col, i){ g.fillStyle = col; g.fillRect(i * W / 4, 0, W / 4, 16); });
-      g.fillStyle = "#050506"; g.textAlign = "center";
-      g.font = "700 30px " + font; g.fillText("ONG Nuestros Orígenes", W / 2, 78);
-      g.font = "500 22px " + font; g.fillStyle = "#55554F"; g.fillText("CAMPAÑA SOLIDARIA NAVIDAD 2026", W / 2, 114);
-      var q = qrMatrix(trackLink(code));
-      if(q){  // módulos de tamaño entero para que el QR quede nítido
-        var n = q.getModuleCount(), m = Math.floor(500 / (n + 6)), x0 = Math.round((W - n * m) / 2), y0 = 140 + Math.round((500 - n * m) / 2);
-        g.fillStyle = "#050506";
-        for(var r = 0; r < n; r++) for(var c = 0; c < n; c++) if(q.isDark(r, c)) g.fillRect(x0 + c * m, y0 + r * m, m, m);
-      }
-      g.fillStyle = "#050506"; g.font = "700 40px " + font; g.fillText(code, W / 2, 700);
-      g.font = "400 24px " + font; g.fillStyle = "#55554F";
-      g.fillText(titulo.length > 46 ? titulo.slice(0, 44) + "…" : titulo, W / 2, 744);
-      g.fillText("Escanéame para seguir este libro hasta la residencia", W / 2, 790);
-      g.font = "500 22px " + font; g.fillStyle = "#00A651"; g.fillText("nuestrosorigenes.cl", W / 2, 850);
-      cv.toBlob(function(blob){
-        if(!blob) return;
-        var a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = "libro-" + code + ".png";
-        document.body.appendChild(a); a.click(); a.remove();
-        setTimeout(function(){ URL.revokeObjectURL(a.href); }, 4000);
-      }, "image/png");
-    }
+    /* QR con la marca de la ONG: assets/qr-ong.js */
+    function drawQR(canvas, text){ return !!window.ongQR && window.ongQR.canvas(canvas, text, 8); }
+    function downloadQR(code, titulo){ if(window.ongQR) window.ongQR.descargar(trackLink(code), code, titulo); }
 
     /* Catálogo + ventana de compra (biblioteca.html) */
     function initLibros(d){
@@ -768,7 +790,8 @@
         var tags = l.colores.map(function(c){ return '<span><i class="sw" style="--sw:' + swatch(c) + '"></i>' + esc(c) + '</span>'; })
           .concat(l.formatos.map(function(f){ return '<span>' + esc(f) + '</span>'; })).join("");
         return '<li class="book">' +
-          '<div class="book__cover">' + (l.portada ? '<img src="' + esc(l.portada) + '" alt="Portada de ' + esc(l.titulo) + '" loading="lazy" decoding="async">' : '') + '</div>' +
+          '<div class="book__cover">' + (l.tapas.length > 1 ? pilaHTML(l.tapas, l.titulo)
+            : l.portada ? '<img src="' + esc(l.portada) + '" alt="Portada de ' + esc(l.titulo) + '" loading="lazy" decoding="async">' : '') + '</div>' +
           '<div class="book__b"><h3>' + esc(l.titulo) + '</h3>' +
           (l.autor ? '<p class="book__by">' + esc(l.autor) + (l.detalle ? ' · ' + esc(l.detalle) : '') + '</p>' : '') +
           '<p class="book__d">' + esc(l.descripcion) + '</p>' +
@@ -776,6 +799,7 @@
           '<div class="book__f">' + (l.precio ? '<span class="price">' + money(l.precio) + '</span>' : '<span class="price price--soft">Valor por confirmar</span>') +
           '<button class="add" type="button" data-libro="' + i + '" aria-label="Comprar ' + esc(l.titulo) + '">Comprar</button></div></div></li>';
       }).join("");
+      initPilas(lista);
 
       var modal = $("#buy"), form = $("#buyForm"), done = $("#buyDone"), msg = $(".form__msg", form), send = $(".buy__send", form);
       var cant = $("#b-cantidad"), cur = null, lastTrigger = null, openedAt = 0;
@@ -794,13 +818,42 @@
         $("#buy-t").textContent = cur.titulo;
         $("#buy-by").textContent = cur.autor;
         $("#buy-price").textContent = cur.precio ? money(cur.precio) + " por libro" : "Valor por confirmar";
-        var img = $("#buy-img"); img.src = cur.portada || ""; img.alt = cur.portada ? "Portada de " + cur.titulo : ""; img.hidden = !cur.portada;
+        var cover = $("#buy-cover");
+        cover.innerHTML = cur.tapas.length > 1 ? pilaHTML(cur.tapas, cur.titulo)
+          : cur.portada ? '<img src="' + esc(cur.portada) + '" alt="Portada de ' + esc(cur.titulo) + '">' : '';
+        cover.hidden = !cover.innerHTML;
+        $$("[data-pila]", cover).forEach(function(st){ st.setAttribute("data-fija", ""); });
+        tyc(false);
         opts("buy-colores", "color", cur.colores, true);
         opts("buy-formatos", "formato", cur.formatos, false);
         msg.textContent = ""; form.hidden = false; done.hidden = true; done.innerHTML = "";
         send.disabled = false; send.textContent = "Confirmar compra";
         modal.hidden = false; document.body.classList.add("lock");
         setTimeout(function(){ ($("input[name=color]", form) || $("#b-nombre")).focus(); }, 30);
+      }
+      // Al elegir un color, esa tapa pasa adelante
+      form.addEventListener("change", function(e){
+        if(e.target.name !== "color") return;
+        var st = $("#buy-cover [data-pila]"); if(st) pilaColor(st, e.target.value);
+      });
+      // Términos y condiciones: se abren al pasar el cursor (CSS) o al tocar el enlace (celulares y teclado)
+      var tycBox = $(".tyc", form), tycBtn = $(".tyc__lnk", form), tycPop = $(".tyc__pop", form), tycFijo = false, tycT = null;
+      function tyc(abrir, fijo){
+        if(!tycBox) return;
+        clearTimeout(tycT);
+        tycFijo = abrir && !!fijo;
+        tycBox.classList.toggle("is-open", abrir);
+        tycBtn.setAttribute("aria-expanded", String(abrir));
+      }
+      if(tycBox){
+        // con el mouse: se abre al pasar por el enlace y se cierra al salir (salvo que se haya hecho clic)
+        [tycBtn, tycPop].forEach(function(el){
+          el.addEventListener("pointerenter", function(e){ if(e.pointerType === "mouse"){ clearTimeout(tycT); if(!tycBox.classList.contains("is-open")) tyc(true); } });
+          el.addEventListener("pointerleave", function(e){ if(e.pointerType === "mouse" && !tycFijo) tycT = setTimeout(function(){ tyc(false); }, 250); });
+        });
+        tycBtn.addEventListener("click", function(){ if(tycFijo) tyc(false); else tyc(true, true); });
+        $(".tyc__x", tycBox).addEventListener("click", function(){ tyc(false); tycBtn.focus(); });
+        modal.addEventListener("click", function(e){ if(!e.target.closest(".tyc")) tyc(false); });
       }
       function close(){
         modal.hidden = true; document.body.classList.remove("lock");
@@ -817,7 +870,10 @@
       modal.addEventListener("click", function(e){ if(e.target === modal || e.target.closest("[data-close]")) close(); });
       document.addEventListener("keydown", function(e){
         if(modal.hidden) return;
-        if(e.key === "Escape"){ close(); return; }
+        if(e.key === "Escape"){
+          if(tycBox && tycBox.classList.contains("is-open")){ tyc(false); tycBtn.focus(); return; }
+          close(); return;
+        }
         trapTab(modal, e);
       });
 
@@ -828,13 +884,14 @@
         var formato = (form.querySelector("input[name=formato]:checked") || {}).value || "";
         var p = { libro:cur.titulo, color:color, formato:formato, cantidad:parseInt(f.cantidad.value, 10) || 1,
                   nombre:f.nombre.value.trim(), correo:f.correo.value.trim(), telefono:f.telefono.value.trim(),
-                  comuna:f.comuna.value.trim(), dedicatoria:f.dedicatoria.value.trim(), web:f.web.value, t:Date.now() - openedAt };
+                  comuna:f.comuna.value.trim(), dedicatoria:f.dedicatoria.value.trim(), web:f.web.value, t:Date.now() - openedAt,
+                  terminos:$("#b-ok").checked };
         var err = cur.colores.length && !color ? ["Elige el color del libro.", form.querySelector("input[name=color]")]
           : cur.formatos.length && !formato ? ["Elige el formato.", form.querySelector("input[name=formato]")]
           : p.nombre.length < 2 ? ["Escribe tu nombre y apellido.", f.nombre]
           : !/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(p.correo) ? ["Revisa tu correo electrónico.", f.correo]
           : p.telefono.replace(/\D/g, "").length < 8 ? ["Escribe un teléfono de contacto.", f.telefono]
-          : !$("#b-ok").checked ? ["Debes aceptar el uso de tus datos para esta compra.", $("#b-ok")] : null;
+          : !$("#b-ok").checked ? ["Para continuar, acepta los términos y condiciones.", $("#b-ok")] : null;
         if(err){ msg.textContent = err[0]; err[1].focus(); return; }
         msg.textContent = "";
 
@@ -874,10 +931,10 @@
           '<div class="done__ok"><svg aria-hidden="true"><use href="#i-check"/></svg></div>' +
           '<h2>¡Gracias, ' + esc(nombre) + '!</h2>' +
           '<p>Registramos ' + (codes.length === 1 ? "tu libro" : codes.length + " libros") + ' «' + esc(res.libro) + '»' + (res.color ? ' (' + esc(res.color) + ')' : '') +
-          '. Cada libro tiene su propio código QR: escanéalo con el celular para ver cuándo se compra, se envía y llega a la residencia.</p>' +
+          '. Cada libro tiene su propio código QR: escanéalo y mira el estado de envío hasta que llega a los niños de la residencia.</p>' +
           '<div class="qrs">' + codes.map(function(c){
             return '<div class="qr"><canvas data-qr="' + esc(c) + '" aria-label="Código QR del libro ' + esc(c) + '" role="img"></canvas><b>' + esc(c) + '</b>' +
-              '<div class="qr__acts"><button type="button" data-dl="' + esc(c) + '" data-t="' + esc(res.libro) + '">Descargar QR</button>' +
+              '<div class="qr__acts"><button type="button" data-dl="' + esc(c) + '" data-t="' + esc(res.libro + (res.color ? " · " + res.color : "")) + '">Descargar QR</button>' +
               '<a href="' + esc(trackLink(c)) + '" target="_blank" rel="noopener">Ver seguimiento</a></div></div>';
           }).join("") + '</div>' +
           '<div class="pay"><h3>Completa tu compra</h3>' +
@@ -888,7 +945,7 @@
           '<a class="btn btn--wa" href="' + esc(wa) + '" target="_blank" rel="noopener"><svg aria-hidden="true"><use href="#wa"/></svg>Enviar por WhatsApp</a></div></div>' +
           '<p>Tu libro suma a la meta cuando confirmemos el pago. <b>Guarda tus códigos:</b> descarga cada QR o toma una captura de pantalla.</p>' +
           '<button class="btn btn--ghost" type="button" data-close>Cerrar</button>';
-        $$("canvas[data-qr]", done).forEach(function(cv){ drawQR(cv, trackLink(cv.getAttribute("data-qr")), 6); });
+        $$("canvas[data-qr]", done).forEach(function(cv){ drawQR(cv, trackLink(cv.getAttribute("data-qr"))); });
         form.hidden = true; done.hidden = false; form.reset();
         $(".modal__box", modal).scrollIntoView({block:"start"});
         done.focus();

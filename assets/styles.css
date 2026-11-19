@@ -571,8 +571,8 @@ ul,ol{list-style:none}
 .book{background:#fff;border:1px solid var(--line);border-radius:var(--r-lg);overflow:hidden;display:flex;flex-direction:column;transition:transform .4s var(--ease), box-shadow .4s var(--ease)}
 .book:hover{transform:translateY(-4px);box-shadow:0 26px 40px -30px rgba(0,0,0,.55)}
 .book__cover{background:var(--soft);aspect-ratio:4/5;display:grid;place-items:center;padding:clamp(14px,2vw,22px)}
-.book__cover img{max-height:100%;width:auto;max-width:100%;object-fit:contain;border-radius:4px;box-shadow:0 18px 30px -18px rgba(0,0,0,.6);transition:transform .7s var(--ease)}
-.book:hover .book__cover img{transform:scale(1.03) rotate(-1deg)}
+.book__cover>img{max-height:100%;width:auto;max-width:100%;object-fit:contain;border-radius:4px;box-shadow:0 18px 30px -18px rgba(0,0,0,.6);transition:transform .7s var(--ease)}
+.book:hover .book__cover>img{transform:scale(1.03) rotate(-1deg)}
 .book__b{padding:1.1rem 1.2rem 1.25rem;display:flex;flex-direction:column;gap:.4rem;flex:1}
 .book h3{font-size:1.1875rem;line-height:1.2;letter-spacing:-.02em}
 .book__by{color:var(--muted);font-size:.9375rem}
@@ -604,8 +604,9 @@ ul,ol{list-style:none}
 .modal__x{position:absolute;top:14px;right:14px}
 @keyframes fadeIn{from{opacity:0}to{opacity:1}}
 .buy{display:grid;gap:1.1rem}
-.buy__book{display:grid;grid-template-columns:96px 1fr;gap:1.1rem;align-items:center;padding-right:44px}
-.buy__book img{width:96px;height:120px;object-fit:contain;background:var(--soft);border-radius:10px;padding:6px}
+.buy__book{display:grid;grid-template-columns:112px 1fr;gap:1.1rem;align-items:center;padding-right:44px}
+.buy__cover{width:112px;height:136px;background:var(--soft);border-radius:10px;padding:6px;display:grid;place-items:center;overflow:hidden}
+.buy__cover>img{width:100%;height:100%;object-fit:contain}
 .buy__book .eyebrow{margin-bottom:.4rem}
 .buy__book h2{font-size:clamp(20px,2.4vw,26px);letter-spacing:-.02em}
 .buy__by{color:var(--muted);font-size:.9375rem;margin-top:.2rem}
@@ -636,7 +637,7 @@ ul,ol{list-style:none}
 .done p{color:var(--muted)}
 .qrs{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:.9rem}
 .qr{border:1px solid var(--line);border-radius:var(--r);padding:1rem;display:grid;justify-items:center;gap:.6rem;text-align:center}
-.qr canvas{width:156px;height:156px;image-rendering:pixelated}
+.qr canvas{width:168px;height:168px}
 .qr b{font-family:var(--display);letter-spacing:.06em;font-size:1rem}
 .qr__acts{display:flex;flex-wrap:wrap;justify-content:center;gap:.4rem .9rem;font-size:.875rem}
 .qr__acts a,.qr__acts button{background:none;border:0;padding:0;cursor:pointer;color:var(--text);text-decoration:underline;text-underline-offset:3px;font-size:inherit}
@@ -714,3 +715,52 @@ ul,ol{list-style:none}
 .card__th--book .card__img{width:auto;height:100%;max-width:78%;object-fit:contain;border-radius:3px;box-shadow:0 14px 24px -14px rgba(0,0,0,.6)}
 .card:hover .card__th--book .card__img{transform:scale(1.04) rotate(-1deg)}
 a.add{display:inline-flex;align-items:center;text-decoration:none}
+
+/* ---------- Libro con varias tapas: una sobre otra y se barajan (assets/main.js → pilaHTML) ---------- */
+.pila{position:relative;width:100%;height:100%;display:grid;place-items:center;cursor:pointer;-webkit-tap-highlight-color:transparent;user-select:none}
+.pila__b{grid-area:1/1;position:relative;z-index:1;height:94%;width:auto;max-width:64%;object-fit:contain;transform-origin:50% 85%;
+  filter:drop-shadow(0 16px 16px rgba(0,0,0,.22));transform:translate(-25%,-4%) rotate(-5deg) scale(.92);transition:transform .6s var(--ease)}
+.pila__b.is-front{z-index:2;transform:translate(21%,3%) rotate(2deg)}
+.pila__b.to-front{animation:pilaAdelante .9s var(--ease) both}
+.pila__b.to-back{animation:pilaAtras .9s var(--ease) both}
+@keyframes pilaAdelante{
+  0%{transform:translate(-25%,-4%) rotate(-5deg) scale(.92);z-index:1}
+  45%{transform:translate(-42%,-7%) rotate(-8deg) scale(.95);z-index:1}
+  55%{z-index:3}
+  100%{transform:translate(21%,3%) rotate(2deg) scale(1);z-index:3}}
+@keyframes pilaAtras{
+  0%{transform:translate(21%,3%) rotate(2deg) scale(1);z-index:2}
+  45%{transform:translate(42%,1%) rotate(7deg) scale(.95);z-index:2}
+  55%{z-index:0}
+  100%{transform:translate(-25%,-4%) rotate(-5deg) scale(.92);z-index:0}}
+.pila__dots{position:absolute;left:50%;bottom:2px;z-index:4;transform:translateX(-50%);display:flex;gap:7px}
+.pila__dots i{width:9px;height:9px;border-radius:50%;background:var(--sw);box-shadow:0 0 0 2px #fff,0 0 0 3px rgba(0,0,0,.14);opacity:.5;transition:opacity .3s,transform .3s var(--ease)}
+.pila__dots i.on{opacity:1;transform:scale(1.25)}
+.card__th--book .pila__b{height:96%;max-width:44%}
+.buy__cover .pila__b{height:94%;max-width:66%;filter:drop-shadow(0 6px 6px rgba(0,0,0,.2))}
+.buy__cover .pila__dots{display:none}
+.book__cover:has(.pila){padding:10px 8px 14px}
+.buy__cover .pila{cursor:default}
+@media (prefers-reduced-motion:reduce){.pila__b{transition:none}.pila__b.to-front,.pila__b.to-back{animation:none}}
+
+/* ---------- Términos y condiciones de la compra (discretos; se abren al pasar el cursor o tocar) ---------- */
+.tyc{position:relative;display:flex;align-items:flex-start;gap:.55rem;font-size:.8125rem;line-height:1.45;color:var(--muted)}
+.tyc>input{width:16px;height:16px;margin:.1rem 0 0;flex:none;accent-color:var(--ink);cursor:pointer}
+.tyc__t{margin:0}
+.tyc__t label{cursor:pointer}
+.tyc__lnk{background:none;border:0;padding:0;font:inherit;color:var(--text);text-decoration:underline;text-decoration-thickness:1px;text-underline-offset:2px;cursor:pointer}
+.tyc__lnk:hover,.tyc.is-open .tyc__lnk{color:var(--ink);text-decoration-thickness:2px}
+.tyc__pop{position:absolute;left:0;right:0;bottom:calc(100% + 10px);z-index:6;max-height:min(62vh,440px);overflow-y:auto;overscroll-behavior:contain;
+  background:linear-gradient(90deg,var(--red) 0 25%,var(--green) 0 50%,var(--yellow) 0 75%,var(--text) 0) top/100% 4px no-repeat,#fff;
+  border:1px solid var(--line);border-radius:14px;padding:1.3rem 1.2rem 1rem;box-shadow:0 28px 50px -24px rgba(0,0,0,.45);
+  color:var(--text);font-size:.8125rem;line-height:1.5;visibility:hidden;opacity:0;transform:translateY(6px);transition:opacity .2s,transform .2s,visibility 0s .2s}
+.tyc.is-open .tyc__pop{visibility:visible;opacity:1;transform:none;transition:opacity .2s,transform .2s}
+.tyc__pop h3{font-size:1rem;letter-spacing:-.01em;padding-right:2rem}
+.tyc__sub{color:var(--muted);font-size:.75rem;margin:.2rem 0 .7rem}
+.tyc__pop ol{margin:0;padding-left:1.25rem;display:grid;gap:.5rem;list-style:decimal}
+.tyc__pop li::marker{font-family:var(--display);font-weight:500;color:var(--muted)}
+.tyc__pop b{font-weight:600;color:var(--ink)}
+.tyc__f{margin-top:.8rem;padding-top:.7rem;border-top:1px solid var(--line);color:var(--muted);font-size:.75rem}
+.tyc__x{position:absolute;top:.75rem;right:.6rem;width:30px;height:30px;display:grid;place-items:center;background:none;border:0;border-radius:50%;cursor:pointer;color:var(--muted)}
+.tyc__x:hover{background:var(--soft);color:var(--ink)}
+.tyc__x svg{width:16px;height:16px}

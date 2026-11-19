@@ -7,7 +7,7 @@ import pathlib
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 SRC = ROOT / "tools" / "pages"
-V = "20261119"  # cache-buster: súbelo en cada publicación
+V = "20261119b"  # cache-buster: súbelo en cada publicación
 
 WA = "https://wa.me/56926175941"
 IG = "https://www.instagram.com/nuestrosorigenesong/"
@@ -175,7 +175,7 @@ def layout(key, fname, title, desc, body):
 <link rel="stylesheet" href="assets/styles.css?v={V}">
 <script>document.documentElement.classList.add("js")</script>
 {JSONLD if key == "inicio" else ""}
-{'<script defer src="assets/vendor/qrcode.js"></script>' if key in QR_PAGES else ""}
+{f'<script defer src="assets/vendor/qrcode.js"></script>{chr(10)}<script defer src="assets/qr-ong.js?v={V}"></script>' if key in QR_PAGES else ""}
 <script defer src="assets/main.js?v={V}"></script>
 </head>
 <body data-page="{key}">

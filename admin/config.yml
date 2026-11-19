@@ -156,6 +156,17 @@ collections:
               - { label: "Título", name: "titulo", widget: "string", hint: "Si cambias el título, los pedidos anteriores conservan el título antiguo." }
               - { label: "Autor", name: "autor", widget: "string", required: false }
               - { label: "Portada", name: "portada", widget: "image", required: false, choose_url: false }
+              - label: "Tapas por color (opcional)"
+                label_singular: "tapa"
+                name: "tapas"
+                widget: "list"
+                required: false
+                collapsed: true
+                summary: "{{fields.color}}"
+                hint: "Si el libro viene en varios colores, sube una imagen por color (PNG o WebP con fondo transparente). Se muestran una sobre otra y se barajan al pasar el cursor. La última de la lista queda adelante."
+                fields:
+                  - { label: "Color", name: "color", widget: "string", hint: "Igual que en «Colores para elegir», por ejemplo Rojo." }
+                  - { label: "Imagen", name: "imagen", widget: "image", choose_url: false }
               - { label: "Precio (en pesos, sin puntos)", name: "precio", widget: "number", value_type: "int", min: 0, hint: "Pon 0 si el valor aún no está definido: se mostrará «Valor por confirmar»." }
               - label: "Colores para elegir"
                 name: "colores"
