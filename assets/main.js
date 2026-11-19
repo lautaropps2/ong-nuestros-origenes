@@ -616,4 +616,285 @@
     save(); render();
     }
   }, "cart");
+  /* ---------- Biblioteca del Barrio: libros, compra con QR y seguimiento ---------- */
+  // Libros y meta: data/biblioteca.json (editable en /admin → Biblioteca).
+  // Pedidos, estadísticas y seguimiento: planilla de Google (tools/biblioteca/pedidos.gs),
+  // cuya dirección va en data/sistema.json → pedidos_url.
+  safe(function(){
+    var lista = $("#libros-lista"), trk = $("#trk"), camps = $$("[data-campana]");
+    if(!lista && !trk && !camps.length) return;
+
+    var LOCAL = /^(localhost|127\.0\.0\.1)$/.test(location.hostname);
+    var TRACK_URL = LOCAL ? new URL("seguimiento.html", location.href).href : "https://www.nuestrosorigenes.cl/seguimiento";
+    var COLORES = { rojo:"#E3120B", amarillo:"#F7D417", verde:"#00A651", azul:"#1D5BD8", negro:"#0A0A0A", blanco:"#FFFFFF",
+                    rosado:"#E91E78", naranjo:"#F28C28", morado:"#7B3FA0", celeste:"#5BC0EB", gris:"#9A9890" };
+    function swatch(name){ return COLORES[String(name).toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "")] || "#C9C7BF"; }
+    function num(n){ try{ return Number(n).toLocaleString("es-CL"); }catch(e){ return String(n); } }
+    function getJSON(url){ return fetch(url, {cache:"no-store"}).then(function(r){ if(!r.ok) throw new Error(r.status); return r.json(); }); }
+    function trackLink(code){ return TRACK_URL + "?c=" + encodeURIComponent(code); }
+    function fecha(iso){
+      if(!iso) return "";
+      var d = new Date(iso); if(isNaN(d)) return "";
+      try{ return d.toLocaleDateString("es-CL", {day:"numeric", month:"short", year:"numeric"}); }catch(e){ return iso.slice(0, 10); }
+    }
+
+    var data = Promise.all([
+      getJSON("data/biblioteca.json").catch(function(){ return {}; }),
+      getJSON("data/sistema.json").catch(function(){ return {}; })
+    ]).then(function(r){
+      var b = r[0] || {}, api = String((r[1] || {}).pedidos_url || "").trim();
+      var ok = /^https:\/\/script\.google\.com\/macros\/s\/[\w-]+\/exec$/.test(api) || (LOCAL && /^http:\/\/localhost:\d+\/$/.test(api));
+      var c = b.campana || {};
+      return {
+        api: ok ? api : "",
+        campana: { meta: Math.max(1, parseInt(c.meta, 10) || 5183), activa: c.activa !== false },
+        pago: b.pago || {},
+        libros: (b.libros || []).filter(function(l){ return l && l.titulo && l.disponible !== false; }).map(function(l){
+          return { titulo:String(l.titulo), autor:String(l.autor || ""), portada:mediaPath(l.portada), detalle:String(l.detalle || ""),
+                   descripcion:String(l.descripcion || ""), precio:Math.max(0, parseInt(l.precio, 10) || 0),
+                   colores:(l.colores || []).map(String).filter(Boolean), formatos:(l.formatos || []).map(String).filter(Boolean) };
+        })
+      };
+    });
+
+    function statsOf(d){
+      if(!d.api) return Promise.resolve(null);
+      return getJSON(d.api + "?accion=estadisticas").then(function(s){ return s && s.ok ? s : null; }).catch(function(){ return null; });
+    }
+    function paintStats(root, meta, s){
+      $$("[data-meta]", root).forEach(function(el){ el.textContent = num(meta); });
+      var prog = $("[data-campana-prog], [data-trk-stats]", root) || (root.matches && root.matches("[data-trk-stats]") ? root : null);
+      if(!s || !prog) return;
+      ["comprados", "enviados", "entregados"].forEach(function(k){ $$('[data-n="' + k + '"]', root).forEach(function(el){ el.textContent = num(s[k] || 0); }); });
+      var pct = Math.min(100, (s.comprados || 0) / meta * 100);
+      var bar = $("[role=progressbar]", root);
+      if(bar){ bar.setAttribute("aria-valuemax", meta); bar.setAttribute("aria-valuenow", s.comprados || 0); }
+      var pctEl = $("[data-pct]", root);
+      if(pctEl) pctEl.textContent = pct.toLocaleString("es-CL", {maximumFractionDigits: pct > 0 && pct < 1 ? 2 : 1}) + "% de la meta";
+      prog.hidden = false;
+      requestAnimationFrame(function(){ requestAnimationFrame(function(){
+        var fill = $("[data-bar]", root); if(fill) fill.style.width = Math.max(pct, s.comprados ? 1.5 : 0) + "%";
+      }); });
+    }
+
+    data.then(function(d){
+      camps.forEach(function(el){ if(!d.campana.activa) el.closest("section").hidden = true; });
+      statsOf(d).then(function(s){ camps.forEach(function(el){ paintStats(el, d.campana.meta, s); }); });
+      if(lista) safe(function(){ initLibros(d); }, "biblioteca-libros");
+      if(trk) safe(function(){ initSeguimiento(d); }, "biblioteca-seguimiento");
+    });
+
+    /* QR */
+    function qrMatrix(text){
+      if(typeof window.qrcode !== "function") return null;
+      var q = window.qrcode(0, "M"); q.addData(text); q.make(); return q;
+    }
+    function drawQR(canvas, text, scale){
+      var q = qrMatrix(text); if(!q) return false;
+      var n = q.getModuleCount(), quiet = 3, size = (n + quiet * 2) * scale;
+      canvas.width = canvas.height = size;
+      var g = canvas.getContext("2d");
+      g.fillStyle = "#fff"; g.fillRect(0, 0, size, size); g.fillStyle = "#050506";
+      for(var r = 0; r < n; r++) for(var c = 0; c < n; c++) if(q.isDark(r, c)) g.fillRect((c + quiet) * scale, (r + quiet) * scale, scale, scale);
+      return true;
+    }
+    function downloadQR(code, titulo){
+      var W = 720, H = 900, cv = document.createElement("canvas"); cv.width = W; cv.height = H;
+      var g = cv.getContext("2d"), font = '"Space Grotesk", Arial, sans-serif';
+      g.fillStyle = "#fff"; g.fillRect(0, 0, W, H);
+      ["#E3120B", "#00A651", "#F7D417", "#050506"].forEach(function(col, i){ g.fillStyle = col; g.fillRect(i * W / 4, 0, W / 4, 16); });
+      g.fillStyle = "#050506"; g.textAlign = "center";
+      g.font = "700 30px " + font; g.fillText("ONG Nuestros Orígenes", W / 2, 78);
+      g.font = "500 22px " + font; g.fillStyle = "#55554F"; g.fillText("CAMPAÑA SOLIDARIA NAVIDAD 2026", W / 2, 114);
+      var q = qrMatrix(trackLink(code));
+      if(q){  // módulos de tamaño entero para que el QR quede nítido
+        var n = q.getModuleCount(), m = Math.floor(500 / (n + 6)), x0 = Math.round((W - n * m) / 2), y0 = 140 + Math.round((500 - n * m) / 2);
+        g.fillStyle = "#050506";
+        for(var r = 0; r < n; r++) for(var c = 0; c < n; c++) if(q.isDark(r, c)) g.fillRect(x0 + c * m, y0 + r * m, m, m);
+      }
+      g.fillStyle = "#050506"; g.font = "700 40px " + font; g.fillText(code, W / 2, 700);
+      g.font = "400 24px " + font; g.fillStyle = "#55554F";
+      g.fillText(titulo.length > 46 ? titulo.slice(0, 44) + "…" : titulo, W / 2, 744);
+      g.fillText("Escanéame para seguir este libro hasta la residencia", W / 2, 790);
+      g.font = "500 22px " + font; g.fillStyle = "#00A651"; g.fillText("nuestrosorigenes.cl", W / 2, 850);
+      cv.toBlob(function(blob){
+        if(!blob) return;
+        var a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = "libro-" + code + ".png";
+        document.body.appendChild(a); a.click(); a.remove();
+        setTimeout(function(){ URL.revokeObjectURL(a.href); }, 4000);
+      }, "image/png");
+    }
+
+    /* Catálogo + ventana de compra (biblioteca.html) */
+    function initLibros(d){
+      var libros = d.libros;
+      if(!libros.length){ lista.innerHTML = '<li class="bazar-empty">Pronto agregaremos nuevos libros. Escríbenos por WhatsApp para consultar.</li>'; return; }
+      lista.innerHTML = libros.map(function(l, i){
+        var tags = l.colores.map(function(c){ return '<span><i class="sw" style="--sw:' + swatch(c) + '"></i>' + esc(c) + '</span>'; })
+          .concat(l.formatos.map(function(f){ return '<span>' + esc(f) + '</span>'; })).join("");
+        return '<li class="book">' +
+          '<div class="book__cover">' + (l.portada ? '<img src="' + esc(l.portada) + '" alt="Portada de ' + esc(l.titulo) + '" loading="lazy" decoding="async">' : '') + '</div>' +
+          '<div class="book__b"><h3>' + esc(l.titulo) + '</h3>' +
+          (l.autor ? '<p class="book__by">' + esc(l.autor) + (l.detalle ? ' · ' + esc(l.detalle) : '') + '</p>' : '') +
+          '<p class="book__d">' + esc(l.descripcion) + '</p>' +
+          (tags ? '<div class="book__tags">' + tags + '</div>' : '') +
+          '<div class="book__f">' + (l.precio ? '<span class="price">' + money(l.precio) + '</span>' : '<span class="price price--soft">Valor por confirmar</span>') +
+          '<button class="add" type="button" data-libro="' + i + '" aria-label="Comprar ' + esc(l.titulo) + '">Comprar</button></div></div></li>';
+      }).join("");
+
+      var modal = $("#buy"), form = $("#buyForm"), done = $("#buyDone"), msg = $(".form__msg", form), send = $(".buy__send", form);
+      var cant = $("#b-cantidad"), cur = null, lastTrigger = null;
+      for(var k = 1; k <= 10; k++) cant.insertAdjacentHTML("beforeend", '<option value="' + k + '">' + k + (k === 1 ? " libro" : " libros") + '</option>');
+
+      function opts(id, name, values, withSwatch){
+        var fs = $("#" + id), box = $(".opts__list", fs);
+        fs.hidden = !values.length;
+        box.innerHTML = values.map(function(v, i){
+          return '<label class="opt"><input type="radio" name="' + name + '" value="' + esc(v) + '"' + (values.length === 1 ? " checked" : "") + (i === 0 ? " required" : "") + '>' +
+            '<span>' + (withSwatch ? '<i class="sw" style="--sw:' + swatch(v) + '"></i>' : '') + esc(v) + '</span></label>';
+        }).join("");
+      }
+      function open(i, trigger){
+        cur = libros[i]; lastTrigger = trigger;
+        $("#buy-t").textContent = cur.titulo;
+        $("#buy-by").textContent = cur.autor;
+        $("#buy-price").textContent = cur.precio ? money(cur.precio) + " por libro" : "Valor por confirmar";
+        var img = $("#buy-img"); img.src = cur.portada || ""; img.alt = cur.portada ? "Portada de " + cur.titulo : ""; img.hidden = !cur.portada;
+        opts("buy-colores", "color", cur.colores, true);
+        opts("buy-formatos", "formato", cur.formatos, false);
+        msg.textContent = ""; form.hidden = false; done.hidden = true; done.innerHTML = "";
+        send.disabled = false; send.textContent = "Confirmar compra";
+        modal.hidden = false; document.body.classList.add("lock");
+        setTimeout(function(){ ($("input[name=color]", form) || $("#b-nombre")).focus(); }, 30);
+      }
+      function close(){
+        modal.hidden = true; document.body.classList.remove("lock");
+        if(lastTrigger && lastTrigger.focus) lastTrigger.focus();
+      }
+      lista.addEventListener("click", function(e){ var b = e.target.closest("[data-libro]"); if(b) open(+b.getAttribute("data-libro"), b); });
+      done.addEventListener("click", function(e){ var b = e.target.closest("[data-dl]"); if(b) downloadQR(b.getAttribute("data-dl"), b.getAttribute("data-t") || ""); });
+      modal.addEventListener("click", function(e){ if(e.target === modal || e.target.closest("[data-close]")) close(); });
+      document.addEventListener("keydown", function(e){
+        if(modal.hidden) return;
+        if(e.key === "Escape"){ close(); return; }
+        trapTab(modal, e);
+      });
+
+      function waLink(text){ return "https://wa.me/" + WA + "?text=" + encodeURIComponent(text); }
+      form.addEventListener("submit", function(e){
+        e.preventDefault();
+        var f = form.elements, color = (form.querySelector("input[name=color]:checked") || {}).value || "";
+        var formato = (form.querySelector("input[name=formato]:checked") || {}).value || "";
+        var p = { libro:cur.titulo, color:color, formato:formato, cantidad:parseInt(f.cantidad.value, 10) || 1,
+                  nombre:f.nombre.value.trim(), correo:f.correo.value.trim(), telefono:f.telefono.value.trim(),
+                  comuna:f.comuna.value.trim(), dedicatoria:f.dedicatoria.value.trim(), web:f.web.value };
+        var err = cur.colores.length && !color ? ["Elige el color del libro.", form.querySelector("input[name=color]")]
+          : cur.formatos.length && !formato ? ["Elige el formato.", form.querySelector("input[name=formato]")]
+          : p.nombre.length < 2 ? ["Escribe tu nombre y apellido.", f.nombre]
+          : !/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(p.correo) ? ["Revisa tu correo electrónico.", f.correo]
+          : p.telefono.replace(/\D/g, "").length < 8 ? ["Escribe un teléfono de contacto.", f.telefono]
+          : !$("#b-ok").checked ? ["Debes aceptar el uso de tus datos para esta compra.", $("#b-ok")] : null;
+        if(err){ msg.textContent = err[0]; err[1].focus(); return; }
+        msg.textContent = "";
+
+        if(!d.api){  // sistema de pedidos aún sin conectar: se coordina por WhatsApp
+          var t = "Hola, quiero comprar para la Campaña Navidad 2026:\n• " + p.cantidad + " x " + p.libro + (color ? " (" + color + ")" : "") +
+            (formato ? " · " + formato : "") + "\nNombre: " + p.nombre + "\nCorreo: " + p.correo + "\nTeléfono: " + p.telefono;
+          window.open(waLink(t), "_blank", "noopener");
+          return;
+        }
+        send.disabled = true; send.textContent = "Registrando tu compra…";
+        fetch(d.api, { method:"POST", body:JSON.stringify(p) })
+          .then(function(r){ return r.json(); })
+          .then(function(res){
+            if(!res || !res.ok) throw new Error((res && res.error) || "");
+            if(!res.codigos || !res.codigos.length) throw new Error("");
+            showDone(res, p);
+          })
+          .catch(function(x){
+            msg.innerHTML = esc(x && x.message ? x.message : "No pudimos registrar tu compra.") +
+              ' <a href="' + esc(waLink("Hola, quiero comprar «" + p.libro + "» para la Campaña Navidad 2026.")) + '" target="_blank" rel="noopener">Escríbenos por WhatsApp</a>.';
+            send.disabled = false; send.textContent = "Confirmar compra";
+          });
+      });
+
+      function showDone(res, p){
+        var codes = res.codigos, total = (res.valor || 0) * codes.length, pago = d.pago || {};
+        var nombre = p.nombre.split(/\s+/)[0];
+        var wa = waLink("Hola, compré " + codes.length + (codes.length === 1 ? " libro" : " libros") + " «" + res.libro + "» para la Campaña Navidad 2026. " +
+          "Mi nombre es " + p.nombre + ". Código" + (codes.length === 1 ? ": " : "s: ") + codes.join(", ") + ". Les envío el comprobante de pago.");
+        var link = /^https:\/\//.test(pago.link || "") ? pago.link : "";
+        done.innerHTML =
+          '<div class="done__ok"><svg aria-hidden="true"><use href="#i-check"/></svg></div>' +
+          '<h2>¡Gracias, ' + esc(nombre) + '!</h2>' +
+          '<p>Registramos ' + (codes.length === 1 ? "tu libro" : codes.length + " libros") + ' «' + esc(res.libro) + '»' + (res.color ? ' (' + esc(res.color) + ')' : '') +
+          '. Cada libro tiene su propio código QR: escanéalo para ver cuándo se compra, se envía y llega a la residencia. También te lo enviamos a <b>' + esc(p.correo) + '</b>.</p>' +
+          '<div class="qrs">' + codes.map(function(c){
+            return '<div class="qr"><canvas data-qr="' + esc(c) + '" aria-label="Código QR del libro ' + esc(c) + '" role="img"></canvas><b>' + esc(c) + '</b>' +
+              '<div class="qr__acts"><button type="button" data-dl="' + esc(c) + '" data-t="' + esc(res.libro) + '">Descargar QR</button>' +
+              '<a href="' + esc(trackLink(c)) + '" target="_blank" rel="noopener">Ver seguimiento</a></div></div>';
+          }).join("") + '</div>' +
+          '<div class="pay"><h3>Completa tu compra</h3>' +
+          '<p><b>Total: ' + (total ? money(total) : "valor por confirmar") + '</b></p>' +
+          (pago.instrucciones ? '<p>' + esc(pago.instrucciones) + '</p>' : '') +
+          (pago.datos_transferencia ? '<p>' + esc(pago.datos_transferencia) + '</p>' : '') +
+          '<div class="btns">' + (link ? '<a class="btn" href="' + esc(link) + '" target="_blank" rel="noopener">Pagar en línea</a>' : '') +
+          '<a class="btn btn--wa" href="' + esc(wa) + '" target="_blank" rel="noopener"><svg aria-hidden="true"><use href="#wa"/></svg>Enviar por WhatsApp</a></div></div>' +
+          '<p>Tu libro suma a la meta cuando confirmemos el pago. Guarda tus códigos: también llegan a tu correo.</p>' +
+          '<button class="btn btn--ghost" type="button" data-close>Cerrar</button>';
+        $$("canvas[data-qr]", done).forEach(function(cv){ drawQR(cv, trackLink(cv.getAttribute("data-qr")), 6); });
+        form.hidden = true; done.hidden = false; form.reset();
+        $(".modal__box", modal).scrollIntoView({block:"start"});
+        done.focus();
+        statsOf(d).then(function(s){ camps.forEach(function(el){ paintStats(el, d.campana.meta, s); }); });
+      }
+    }
+
+    /* Seguimiento (seguimiento.html?c=NAV-XXXX-XXXX) */
+    function initSeguimiento(d){
+      var stats = $("[data-trk-stats]"), main = $("[data-trk-main]"), find = $("[data-trk-find]");
+      var code = String(new URLSearchParams(location.search).get("c") || "").trim().toUpperCase();
+      var ICON = { "Pendiente de pago":"i-clock", "Comprado":"i-book", "Enviado":"i-truck", "Entregado":"i-gift", "Anulado":"i-x" };
+      var ORDEN = ["Comprado", "Enviado", "Entregado"];
+      function setIcon(id){
+        var ic = $("[data-trk-ic]", main);
+        ic.innerHTML = '<svg aria-hidden="true"><use href="#' + id + '"/></svg>';
+        ic.classList.remove("is-pop"); void ic.offsetWidth; if(!reduce) ic.classList.add("is-pop");
+      }
+      function notFound(t){
+        main.hidden = true; find.hidden = false;
+        $("[data-trk-find-t]", find).textContent = String(t).replace(/\.$/, "");
+        $("#trk-code").value = code;
+      }
+      if(!code){ statsOf(d).then(function(s){ paintStats(stats, d.campana.meta, s); }); return; }
+      $("#trk-code").value = code;
+      if(!d.api){ notFound("El seguimiento estará disponible muy pronto"); return; }
+      find.hidden = true; main.hidden = false;
+      $("[data-trk-code]", main).textContent = code;
+      getJSON(d.api + "?accion=seguimiento&codigo=" + encodeURIComponent(code)).then(function(r){
+        if(!r || !r.ok){ notFound((r && r.error) || "No encontramos ese código"); statsOf(d).then(function(s){ paintStats(stats, d.campana.meta, s); }); return; }
+        var est = r.estado, idx = ORDEN.indexOf(est);
+        trk.setAttribute("data-estado", est);
+        setIcon(ICON[est] || "i-clock");
+        $("[data-trk-title]", main).textContent =
+          est === "Entregado" ? "¡Entregado!" : est === "Enviado" ? "En camino" : est === "Comprado" ? "Comprado" : est === "Anulado" ? "Pedido anulado" : "Compra registrada";
+        $("[data-trk-who]", main).textContent = "Libro de " + r.nombre + " · " + r.libro + (r.color ? " (" + r.color + ")" : "");
+        $("[data-trk-note]", main).textContent =
+          est === "Pendiente de pago" ? "Estamos confirmando tu pago. Cuando lo confirmemos, tu libro suma a la meta de la campaña."
+          : est === "Entregado" ? "Tu libro llegó a las niñas, niños y adolescentes de la residencia. ¡Gracias por regalar lectura!"
+          : est === "Anulado" ? "Si crees que es un error, escríbenos por WhatsApp al +56 9 2617 5941." : "";
+        var fechas = { "Comprado": r.fechas && r.fechas.pago, "Enviado": r.fechas && r.fechas.envio, "Entregado": r.fechas && r.fechas.entrega };
+        $$("[data-paso]", main).forEach(function(li, i){
+          li.classList.toggle("is-done", idx >= i);
+          li.classList.toggle("is-now", idx === i);
+          $("time", li).textContent = idx >= i ? fecha(fechas[li.getAttribute("data-paso")]) : "";
+        });
+        $("[data-trk-line]", main).hidden = est === "Anulado";
+        document.title = ($("[data-trk-title]", main).textContent) + " · Seguimiento · ONG Nuestros Orígenes";
+        paintStats(stats, d.campana.meta, r.estadisticas || null);
+      }).catch(function(){
+        notFound("No pudimos consultar tu libro. Intenta de nuevo en unos minutos");
+      });
+    }
+  }, "biblioteca");
 })();

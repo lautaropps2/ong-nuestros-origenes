@@ -7,7 +7,7 @@ import pathlib
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 SRC = ROOT / "tools" / "pages"
-V = "20261030"  # cache-buster: súbelo en cada publicación
+V = "20261118"  # cache-buster: súbelo en cada publicación
 
 WA = "https://wa.me/56926175941"
 IG = "https://www.instagram.com/nuestrosorigenesong/"
@@ -28,6 +28,10 @@ PAGES = [
      "Línea de tiempo fotográfica de ONG Nuestros Orígenes: Titereduca, lengua de señas, Rapa Nui, ferias y reciclaje RAEE, de 2012 a hoy."),
     ("apoyanos", "apoyanos.html", "Apóyanos · ONG Nuestros Orígenes",
      "Colabora con aportes, auspicios o donaciones para el comedor abierto, salud mental, regularización migratoria y más en Rancagua."),
+    ("biblioteca", "biblioteca.html", "Biblioteca del Barrio · Campaña Navidad 2026 · ONG Nuestros Orígenes",
+     "Regala un libro esta Navidad: 5.183 libros para niñas, niños y adolescentes en residencias de Chile. Compra en la Biblioteca del Barrio y sigue tu libro con código QR."),
+    ("seguimiento", "seguimiento.html", "Seguimiento de tu libro · Navidad 2026 · ONG Nuestros Orígenes",
+     "Sigue con tu código QR el libro que regalaste en la Campaña Solidaria Navidad 2026: comprado, enviado y entregado en la residencia."),
     ("bazar", "bazar.html", "Bazar Dign@ y Emporio · ONG Nuestros Orígenes",
      "Ropa y accesorios reciclados, emporio, vivero urbano y artesanía. Con tu compra apoyas a personas en situación de calle."),
     ("contacto", "contacto.html", "Contacto · ONG Nuestros Orígenes",
@@ -48,6 +52,7 @@ NAV = [
     ("noticias", "noticias.html", "Noticias", []),
     ("galeria", "galeria.html", "Galería", []),
     ("apoyanos", "apoyanos.html", "Apóyanos", []),
+    ("biblioteca", "biblioteca.html", "Biblioteca", []),
     ("bazar", "bazar.html", "Bazar", []),
     ("contacto", "contacto.html", "Contacto", []),
 ]
@@ -83,6 +88,12 @@ SPRITE = """<svg width="0" height="0" style="position:absolute" aria-hidden="tru
 <symbol id="i-book" viewBox="0 0 28 28" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"><path d="M14 7c-3-2-7-2.5-11-2v18c4-.5 8 0 11 2 3-2 7-2.5 11-2V5c-4-.5-8 0-11 2zM14 7v18"/></symbol>
 <symbol id="i-tool" viewBox="0 0 28 28" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"><path d="M17 4a5 5 0 0 0-5 6.5L3 19.5 6.5 23l9-9A5 5 0 0 0 22 9l-3 1-2-2 1-3z"/></symbol>
 <symbol id="i-recycle" viewBox="0 0 40 40" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 9l5-6 5 6M20 3v8"/><path d="M11 30H4l4-8M8 22l4 2"/><path d="M29 30h7l-4-8"/><path d="M14 13l-6 9M26 13l6 9M11 30h18"/></symbol>
+<symbol id="i-qr" viewBox="0 0 28 28" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="4" y="4" width="7" height="7" rx="1"/><rect x="17" y="4" width="7" height="7" rx="1"/><rect x="4" y="17" width="7" height="7" rx="1"/><path d="M17 17h3v3h-3zM21 21h3v3h-3zM21 17h3M17 24v-1" stroke-linecap="round"/></symbol>
+<symbol id="i-check" viewBox="0 0 28 28" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 14.5l5.5 5.5L22 9"/></symbol>
+<symbol id="i-truck" viewBox="0 0 28 28" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"><path d="M3 7h13v12H3zM16 11h5l4 4.5V19h-9z"/><circle cx="8" cy="20.5" r="2.2"/><circle cx="20.5" cy="20.5" r="2.2"/></symbol>
+<symbol id="i-gift" viewBox="0 0 28 28" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"><path d="M4 10h20v5H4zM6 15h16v9H6zM14 10v14"/><path d="M14 10c-2-4-7-5-7-2s5 2 7 2zm0 0c2-4 7-5 7-2s-5 2-7 2z"/></symbol>
+<symbol id="i-clock" viewBox="0 0 28 28" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><circle cx="14" cy="14" r="10"/><path d="M14 8v6l4 2.5"/></symbol>
+<symbol id="i-star" viewBox="0 0 28 28" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"><path d="M14 3.5l3.2 6.6 7.3 1-5.3 5.1 1.3 7.2L14 20l-6.5 3.4 1.3-7.2-5.3-5.1 7.3-1z"/></symbol>
 <symbol id="i-heart" viewBox="0 0 28 28" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"><path d="M14 24S3 17.5 3 10a5.5 5.5 0 0 1 11-1.5A5.5 5.5 0 0 1 25 10c0 7.5-11 14-11 14z"/></symbol>
 </defs></svg>"""
 
@@ -132,6 +143,10 @@ JSONLD = """<script type="application/ld+json">
 </script>"""
 
 
+QR_PAGES = ("biblioteca", "seguimiento")  # páginas que dibujan códigos QR
+NO_SITEMAP = ("seguimiento",)              # se abre desde el QR de cada libro
+
+
 def page_url(fname):
     return SITE + "/" if fname == "index.html" else SITE + "/" + fname[:-5]
 
@@ -169,6 +184,7 @@ def layout(key, fname, title, desc, body):
 <link rel="stylesheet" href="assets/styles.css?v={V}">
 <script>document.documentElement.classList.add("js")</script>
 {JSONLD if key == "inicio" else ""}
+{'<script defer src="assets/vendor/qrcode.js"></script>' if key in QR_PAGES else ""}
 <script defer src="assets/main.js?v={V}"></script>
 </head>
 <body data-page="{key}">
@@ -239,6 +255,7 @@ def layout(key, fname, title, desc, body):
           <li><a href="noticias.html">Noticias</a></li>
           <li><a href="galeria.html">Galería</a></li>
           <li><a href="apoyanos.html">Apóyanos</a></li>
+          <li><a href="biblioteca.html">Biblioteca del Barrio</a></li>
           <li><a href="bazar.html">Bazar Dign@ y Emporio</a></li>
           <li><a href="contacto.html">Contacto</a></li>
         </ul>
@@ -286,12 +303,12 @@ def write_robots_sitemap():
     robots += ["User-agent: *", "Allow: /", "Disallow: /admin/", "Disallow: /api/", "", f"Sitemap: {SITE}/sitemap.xml", ""]
     (ROOT / "robots.txt").write_text("\n".join(robots), encoding="utf-8")
 
-    urls = "".join(f"  <url><loc>{page_url(f)}</loc></url>\n" for _, f, _, _ in PAGES)
+    urls = "".join(f"  <url><loc>{page_url(f)}</loc></url>\n" for k, f, _, _ in PAGES if k not in NO_SITEMAP)
     (ROOT / "sitemap.xml").write_text(
         '<?xml version="1.0" encoding="UTF-8"?>\n'
         '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n' + urls + "</urlset>\n", encoding="utf-8")
 
-    pages = "\n".join(f"- [{t.split(' · ')[0].split(' | ')[0]}]({page_url(f)}): {d}" for _, f, t, d in PAGES)
+    pages = "\n".join(f"- [{t.split(' · ')[0].split(' | ')[0]}]({page_url(f)}): {d}" for k, f, t, d in PAGES if k not in NO_SITEMAP)
     (ROOT / "llms.txt").write_text(f"""# ONG Nuestros Orígenes
 
 > ONG Nuestros Orígenes es una organización no gubernamental (ONG) sin fines de lucro de Rancagua, Región de O'Higgins, Chile, fundada el 8 de agosto de 2014. Promueve y protege los derechos de los pueblos originarios y de las comunidades migrantes residentes en Chile, en el marco del Convenio 169 de la OIT y la Ley Indígena 19.253.

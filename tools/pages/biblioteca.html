@@ -1,0 +1,118 @@
+<section class="phero pat" aria-labelledby="page-t">
+  <div class="wrap">
+    <nav class="crumbs" aria-label="Ruta"><a href="index.html">Inicio</a><span aria-hidden="true">/</span><span aria-current="page">Biblioteca</span></nav>
+    <h1 id="page-t"><span>Biblioteca del Barrio</span></h1>
+    <p>Fomentamos la lectura a cualquier edad y sin importar tu condición. Esta Navidad, cada libro que compras aquí llega a una niña, niño o adolescente que vive en una residencia de Chile.</p>
+  </div>
+</section>
+<div class="stripe" aria-hidden="true"><span></span><span></span><span></span><span></span></div>
+
+<!-- ============ CAMPAÑA NAVIDAD 2026 (meta en data/biblioteca.json; avance desde el sistema de pedidos) ============ -->
+<section class="sec" aria-labelledby="camp-t">
+  <div class="wrap">
+    <div class="camp pat rv" data-campana>
+      <p class="camp__tag">¡Misión Navidad 2026 en todo Chile!</p>
+      <h2 id="camp-t">¡Ayúdanos a cumplir la meta!</h2>
+      <p class="camp__meta"><b data-meta>5.183</b> libros</p>
+      <p class="camp__sub">para niñas, niños y adolescentes en residencias</p>
+      <div class="camp__prog" data-campana-prog hidden>
+        <div class="bar" role="progressbar" aria-label="Avance de la meta" aria-valuemin="0" aria-valuemax="5183" aria-valuenow="0"><span data-bar></span></div>
+        <ul class="camp__nums">
+          <li><b data-n="comprados">0</b> libros comprados</li>
+          <li><b data-n="enviados">0</b> enviados</li>
+          <li><b data-n="entregados">0</b> entregados en residencias</li>
+        </ul>
+      </div>
+      <a class="btn" href="#libros-t">Elige tu libro <svg class="arr" aria-hidden="true"><use href="#i-arr"/></svg></a>
+    </div>
+    <blockquote class="quote rv">“Que no te cuenten el cuento… <strong>esta Navidad regala un libro a tu hogar</strong> y estarás regalando un libro a un niño, niña o adolescente que vive en una residencia de menores en nuestro país.”</blockquote>
+  </div>
+</section>
+
+<!-- ============ CÓMO FUNCIONA ============ -->
+<section class="sec sec--soft" aria-labelledby="pasos-t">
+  <div class="wrap">
+    <div class="sh rv"><p class="eyebrow">Cómo funciona</p><h2 id="pasos-t">Más que un libro</h2></div>
+    <ol class="helps steps" data-stagger>
+      <li class="lcard c-red"><div class="circle"><svg aria-hidden="true"><use href="#i-book"/></svg></div><h3>1. Elige tu libro</h3><p>Escoge un ejemplar de la Biblioteca del Barrio, en formato físico o digital, y completa tus datos.</p></li>
+      <li class="lcard c-ink"><div class="circle"><svg aria-hidden="true"><use href="#i-qr"/></svg></div><h3>2. Rastrea con QR</h3><p>Al terminar tu compra recibes un código QR por cada libro. Escanéalo y mira cuándo se compra, se envía y llega a la residencia.</p></li>
+      <li class="lcard c-green"><div class="circle"><svg aria-hidden="true"><use href="#i-star"/></svg></div><h3>3. Talleres de verano</h3><p>Tu aporte también financia talleres de cuentacuentos y emprendimiento sustentable en la “Resi”, para que el libro no quede olvidado en un rincón.</p></li>
+    </ol>
+  </div>
+</section>
+
+<!-- ============ LIBROS (data/biblioteca.json, editable en /admin → Biblioteca) ============ -->
+<section class="sec" aria-labelledby="libros-t" id="libros">
+  <div class="wrap">
+    <div class="sh rv"><p class="eyebrow">Programa Fomento Autores Independientes</p><h2 id="libros-t">Elige tu libro</h2>
+      <p>Apoyas a escritores independientes de Chile y financias la Biblioteca del Barrio.</p></div>
+    <ul class="books" id="libros-lista"></ul>
+    <noscript><p class="bazar-note">Activa JavaScript para ver los libros, o escríbenos por WhatsApp al +56 9 2617 5941.</p></noscript>
+  </div>
+</section>
+
+<!-- ============ SEGUIMIENTO ============ -->
+<section class="sec sec--tight" aria-labelledby="track-t" style="padding-bottom:clamp(40px,5vw,64px)">
+  <div class="wrap">
+    <div class="track-box rv">
+      <div>
+        <svg class="big-ic" aria-hidden="true"><use href="#i-qr"/></svg>
+        <h2 id="track-t">¿Ya regalaste un libro?</h2>
+        <p>Escanea tu código QR o escribe el código que te enviamos por correo.</p>
+      </div>
+      <form class="track-form" action="seguimiento.html" method="get">
+        <label class="sr-only" for="track-code">Código del libro</label>
+        <input id="track-code" name="c" placeholder="NAV-XXXX-XXXX" autocomplete="off" autocapitalize="characters" spellcheck="false" required>
+        <button class="btn btn--ink" type="submit">Ver mi libro</button>
+      </form>
+    </div>
+  </div>
+</section>
+
+<!-- ============ SOBRE LA BIBLIOTECA ============ -->
+<section class="sec sec--tight" aria-label="Sobre la Biblioteca del Barrio">
+  <div class="wrap">
+    <div class="mv rv">
+      <div class="mv__row">
+        <h3>Biblioteca del Barrio</h3>
+        <p>Nace desde la necesidad de fomentar la lectura a cualquier edad y sin importar tu condición: solo nos motiva el interés de aprender y disfrutar de una buena lectura. También apoyamos la nivelación de estudios y la preparación preuniversitaria.</p>
+      </div>
+      <div class="mv__row">
+        <h3>Autores independientes</h3>
+        <p>A través del <strong>Programa Fomento Autores Independientes</strong> promovemos a escritores de nuestro país en el Bazar y Emporio de ONG Nuestros Orígenes: el autor vende sus ejemplares y, a la vez, se financia la Biblioteca del Barrio para una educación libre.</p>
+      </div>
+      <div class="mv__row">
+        <h3>Garantía de seguimiento</h3>
+        <p>Cada libro tiene su propio código QR. Con él puedes comprobar cuándo confirmamos tu compra, cuándo sale y cuándo llega a las niñas, niños y adolescentes de la residencia.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ VENTANA DE COMPRA ============ -->
+<div class="modal" id="buy" role="dialog" aria-modal="true" aria-labelledby="buy-t" hidden>
+  <div class="modal__box">
+    <button class="ibtn modal__x" type="button" data-close aria-label="Cerrar"><svg aria-hidden="true"><use href="#i-x"/></svg></button>
+    <form class="buy" id="buyForm" novalidate>
+      <div class="buy__book">
+        <img id="buy-img" src="" alt="">
+        <div><p class="eyebrow">Navidad 2026</p><h2 id="buy-t"></h2><p class="buy__by" id="buy-by"></p><p class="price" id="buy-price"></p></div>
+      </div>
+      <fieldset class="opts" id="buy-colores"><legend>Color</legend><div class="opts__list"></div></fieldset>
+      <fieldset class="opts" id="buy-formatos"><legend>Formato</legend><div class="opts__list"></div></fieldset>
+      <div class="buy__grid">
+        <div class="field"><label for="b-nombre">Nombre y apellido *</label><input id="b-nombre" name="nombre" autocomplete="name" required maxlength="80"></div>
+        <div class="field"><label for="b-correo">Correo *</label><input id="b-correo" name="correo" type="email" autocomplete="email" required maxlength="120"></div>
+        <div class="field"><label for="b-telefono">Teléfono / WhatsApp *</label><input id="b-telefono" name="telefono" type="tel" autocomplete="tel" placeholder="+56 9 ..." required maxlength="30"></div>
+        <div class="field"><label for="b-comuna">Comuna</label><input id="b-comuna" name="comuna" autocomplete="address-level2" maxlength="60"></div>
+        <div class="field"><label for="b-cantidad">Cantidad de libros</label><select id="b-cantidad" name="cantidad"></select></div>
+      </div>
+      <div class="field"><label for="b-dedicatoria">Dedicatoria para quien recibe el libro (opcional)</label><textarea id="b-dedicatoria" name="dedicatoria" maxlength="300" rows="3" placeholder="Ej.: ¡Feliz Navidad! Que este libro te acompañe."></textarea></div>
+      <div class="hp" aria-hidden="true"><label for="b-web">No llenar</label><input id="b-web" name="web" tabindex="-1" autocomplete="off"></div>
+      <label class="check"><input type="checkbox" id="b-ok" required> <span>Acepto que ONG Nuestros Orígenes use estos datos solo para esta compra y su seguimiento.</span></label>
+      <p class="form__msg" role="status" aria-live="polite"></p>
+      <button class="btn btn--ink buy__send" type="submit">Confirmar compra</button>
+    </form>
+    <div class="done" id="buyDone" hidden tabindex="-1"></div>
+  </div>
+</div>

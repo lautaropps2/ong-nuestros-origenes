@@ -1,0 +1,42 @@
+<section class="trk-page" aria-labelledby="trk-t">
+  <div class="wrap">
+    <article class="trk" id="trk" data-estado="buscar">
+      <div class="trk__stripe" aria-hidden="true"><span></span><span></span><span></span><span></span></div>
+      <header class="trk__head">
+        <span class="trk__brand"><svg aria-hidden="true"><use href="#logo"/></svg><span>ONG<br>Nuestros<br>Orígenes</span></span>
+        <span class="trk__camp">Navidad<br>2026</span>
+      </header>
+
+      <div class="trk__meta" data-trk-stats hidden>
+        <div class="trk__metarow"><span class="trk__label">Meta de la campaña</span><span class="trk__count"><b data-n="comprados">0</b> / <span data-meta>5.183</span> libros</span></div>
+        <div class="bar" role="progressbar" aria-label="Avance de la meta" aria-valuemin="0" aria-valuemax="5183" aria-valuenow="0"><span data-bar></span></div>
+        <div class="trk__metarow trk__small"><span data-pct>0% de la meta</span><span>Entregados: <b data-n="entregados">0</b></span></div>
+      </div>
+
+      <!-- Resultado del código -->
+      <div class="trk__main" data-trk-main hidden aria-live="polite">
+        <div class="trk__ic" data-trk-ic><svg aria-hidden="true"><use href="#i-clock"/></svg></div>
+        <h1 class="trk__title" id="trk-t" data-trk-title>Buscando tu libro…</h1>
+        <p class="trk__who" data-trk-who></p>
+        <p class="trk__note" data-trk-note></p>
+        <ol class="trk__line" data-trk-line>
+          <li data-paso="Comprado"><span class="dot"></span><b>Comprado</b><time></time></li>
+          <li data-paso="Enviado"><span class="dot"></span><b>Enviado</b><time></time></li>
+          <li data-paso="Entregado"><span class="dot"></span><b>Entregado en el hogar</b><time></time></li>
+        </ol>
+        <p class="trk__code">Código <b data-trk-code></b></p>
+      </div>
+
+      <!-- Sin código: buscar -->
+      <form class="trk__find" data-trk-find action="seguimiento.html" method="get">
+        <h1 class="trk__title" data-trk-find-t>Sigue tu libro</h1>
+        <p class="trk__who">Escribe el código que recibiste al comprar o escanea tu QR.</p>
+        <label class="sr-only" for="trk-code">Código del libro</label>
+        <input id="trk-code" name="c" placeholder="NAV-XXXX-XXXX" autocomplete="off" autocapitalize="characters" spellcheck="false" required>
+        <button class="btn btn--ink" type="submit">Ver mi libro</button>
+      </form>
+
+      <footer class="trk__foot"><a class="more" href="biblioteca.html">› Regalar otro libro <svg aria-hidden="true"><use href="#i-arr"/></svg></a></footer>
+    </article>
+  </div>
+</section>

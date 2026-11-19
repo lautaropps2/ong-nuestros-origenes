@@ -1,0 +1,59 @@
+{
+  "campana": {
+    "titulo": "Campaña Solidaria Navidad 2026",
+    "meta": 5183,
+    "activa": true,
+    "texto": "Elige un libro de nuestra Biblioteca del Barrio y lo entregamos esta Navidad a una niña, niño o adolescente que vive en una residencia de Chile. Al comprar recibes un código QR para seguir tu libro hasta que llegue."
+  },
+  "pago": {
+    "instrucciones": "Escríbenos por WhatsApp con tu código y te enviamos los datos para pagar. Cuando confirmemos el pago, tu libro suma a la meta y verás el avance en tu código QR.",
+    "datos_transferencia": "",
+    "link": ""
+  },
+  "libros": [
+    {
+      "titulo": "Un emprendimiento para cada día",
+      "autor": "CEmprendedor",
+      "portada": "assets/img/libros/emprendimiento-par.jpg",
+      "precio": 14990,
+      "colores": ["Rojo", "Amarillo"],
+      "formatos": ["Físico"],
+      "descripcion": "Un libro para niños y familias con 365 historias reales de emprendedores, fundaciones y personas inspiradoras de Chile, una para cada día del año. Invita a descubrir valores como la creatividad, la resiliencia y el espíritu emprendedor, y a soñar en grande desde pequeños.",
+      "detalle": "Tapa dura · 288 páginas",
+      "disponible": true
+    },
+    {
+      "titulo": "Un Sueño Hecho Realidad: El Vuelo del Alma hacia Rapa Nui",
+      "autor": "Victoria Contreras Fuentes",
+      "portada": "assets/img/libros/un-sueno-hecho-realidad.jpg",
+      "precio": 0,
+      "colores": [],
+      "formatos": ["Digital"],
+      "descripcion": "Una biografía espiritual e inspiradora que narra el vuelo del alma entre dos mundos, a través del viaje simbólico de un pájaro que cruza el océano desde el continente a Rapa Nui, donde la identidad, las raíces y la fe en uno mismo se entrelazan.",
+      "detalle": "Memorias · conexión intercultural con la cultura Rapa Nui",
+      "disponible": true
+    },
+    {
+      "titulo": "Perros Bravos",
+      "autor": "Jaime Bustos",
+      "portada": "assets/img/libros/perros-bravos.jpg",
+      "precio": 0,
+      "colores": [],
+      "formatos": ["Digital"],
+      "descripcion": "Una comedia juvenil que nació como guion de cine. Jaime Bustos, autor chileno residente en Chillán, la transformó en novela y la autopublicó aprendiendo cada paso del proceso por su cuenta.",
+      "detalle": "Novela juvenil",
+      "disponible": true
+    },
+    {
+      "titulo": "Historias Oscuras",
+      "autor": "Jaime Bustos",
+      "portada": "assets/img/libros/historias-oscuras.jpg",
+      "precio": 0,
+      "colores": [],
+      "formatos": ["Digital"],
+      "descripcion": "Antología de cuatro relatos que exploran los límites del miedo y la mente humana, con misterio y tensión psicológica. La segunda obra de Jaime Bustos, autor diagnosticado a los siete años con neuropatía óptica de Leber.",
+      "detalle": "Relatos · lectores jóvenes y adultos",
+      "disponible": true
+    }
+  ]
+}

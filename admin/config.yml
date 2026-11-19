@@ -121,6 +121,58 @@ collections:
                 default: true
                 hint: "Apágalo cuando se agote: el producto se oculta de la tienda sin borrarlo."
 
+  # ---------------------------------------------------------------- BIBLIOTECA
+  - name: "biblioteca"
+    label: "Biblioteca"
+    description: "Libros de la Biblioteca del Barrio y Campaña Navidad 2026. Los pedidos, el estado de cada libro (Comprado, Enviado, Entregado) y el Excel están en la planilla de Google, no aquí."
+    files:
+      - name: "catalogo"
+        label: "Libros, meta y forma de pago"
+        file: "data/biblioteca.json"
+        fields:
+          - label: "Campaña"
+            name: "campana"
+            widget: "object"
+            fields:
+              - { label: "Título", name: "titulo", widget: "string" }
+              - { label: "Meta de libros", name: "meta", widget: "number", value_type: "int", min: 1 }
+              - { label: "Mostrar campaña", name: "activa", widget: "boolean", default: true, hint: "Apágalo cuando termine la campaña: se ocultan la meta y el avance." }
+              - { label: "Texto", name: "texto", widget: "text", required: false }
+          - label: "Forma de pago"
+            name: "pago"
+            widget: "object"
+            hint: "Se muestra al comprador justo después de comprar y en el correo de confirmación."
+            fields:
+              - { label: "Instrucciones", name: "instrucciones", widget: "text" }
+              - { label: "Datos para transferencia", name: "datos_transferencia", widget: "text", required: false, hint: "Ej.: Banco, tipo de cuenta, número, RUT y correo. Déjalo vacío para coordinar por WhatsApp." }
+              - { label: "Link de pago (opcional)", name: "link", widget: "string", required: false, hint: "Debe empezar con https:// (por ejemplo, un link de Mercado Pago)." }
+          - label: "Libros"
+            label_singular: "libro"
+            name: "libros"
+            widget: "list"
+            collapsed: true
+            summary: "{{fields.titulo}} · ${{fields.precio}}"
+            fields:
+              - { label: "Título", name: "titulo", widget: "string", hint: "Si cambias el título, los pedidos anteriores conservan el título antiguo." }
+              - { label: "Autor", name: "autor", widget: "string", required: false }
+              - { label: "Portada", name: "portada", widget: "image", required: false, choose_url: false }
+              - { label: "Precio (en pesos, sin puntos)", name: "precio", widget: "number", value_type: "int", min: 0, hint: "Pon 0 si el valor aún no está definido: se mostrará «Valor por confirmar»." }
+              - label: "Colores para elegir"
+                name: "colores"
+                widget: "list"
+                required: false
+                hint: "Ej.: Rojo, Amarillo. Déjalo vacío si el libro tiene una sola versión."
+                field: { label: "Color", name: "color", widget: "string" }
+              - label: "Formatos"
+                name: "formatos"
+                widget: "select"
+                multiple: true
+                required: false
+                options: ["Físico", "Digital"]
+              - { label: "Descripción", name: "descripcion", widget: "text" }
+              - { label: "Detalle corto", name: "detalle", widget: "string", required: false, hint: "Ej.: Tapa dura · 288 páginas" }
+              - { label: "Disponible", name: "disponible", widget: "boolean", default: true, hint: "Apágalo para ocultar el libro sin borrarlo." }
+
   # ---------------------------------------------------------------- GALERÍA
   - name: "galeria"
     label: "Galería"
