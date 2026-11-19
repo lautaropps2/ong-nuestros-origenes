@@ -1,6 +1,7 @@
 /* Código QR con la marca de ONG Nuestros Orígenes (requiere assets/vendor/qrcode.js).
-   - Esquinas en los colores de la ONG: rojo arriba a la izquierda y verde arriba a la derecha, como en el logo.
-   - Símbolo de la ONG (la chakana de 7×7) al centro, sobre un recuadro blanco.
+   - Esquinas en los colores de la ONG, como en el logo: rojo arriba a la izquierda, verde arriba a la derecha
+     y amarillo abajo a la izquierda.
+   - Símbolo de la ONG (la chakana de 7×7) llenando el centro, sin recuadro blanco.
    - Usa corrección de errores alta (H, o Q si el enlace es largo), así el QR se lee aunque el logo tape el centro.
    Hay un QR por compra (aunque sean muchos libros). Lo usan biblioteca.html (al comprar) y el panel /admin/pedidos. */
 (function(){
@@ -29,17 +30,20 @@
     for(var r = 0; r < n; r++) for(var c = 0; c < n; c++){
       if(q.isDark(r, c) && !ojo(r, c) && !centro(r, c)) g.fillRect(x + c * m, y + r * m, m, m);
     }
-    [[0, 0, ROJO], [0, n - 7, VERDE], [n - 7, 0, TINTA]].forEach(function(o){
+    // Esquinas: roja, verde y amarilla (como en el logo). [fila, columna, color, relleno del anillo interior]
+    // La amarilla va con marco y centro negros: un cuadro amarillo entero sobre blanco tiene muy poco contraste
+    // y los lectores no lo encuentran (probado: ZXing deja de leerlo en casi todos los tamaños).
+    [[0, 0, ROJO, ""], [0, n - 7, VERDE, ""], [n - 7, 0, TINTA, AMARILLO]].forEach(function(o){
       // esquinas casi rectas: con bordes muy redondeados algunos lectores de QR no las reconocen
       var ox = x + o[1] * m, oy = y + o[0] * m;
       g.fillStyle = o[2];
       g.beginPath(); redondo(g, ox, oy, 7 * m, 7 * m, .25 * m); redondo(g, ox + m, oy + m, 5 * m, 5 * m, .16 * m); g.fill("evenodd");
+      if(o[3]){ g.fillStyle = o[3]; g.fillRect(ox + m, oy + m, 5 * m, 5 * m); g.fillStyle = o[2]; }
       g.beginPath(); redondo(g, ox + 2 * m, oy + 2 * m, 3 * m, 3 * m, .11 * m); g.fill();
     });
-    // Logo de 7 módulos (un cuadro por módulo) sobre un recuadro blanco. Probado con los lectores ZXing y OpenCV,
-    // también achicado a 1/3: con un logo más grande, los QR pequeños fallan en algunos lectores.
-    var L = 7 * m, k = L / 7, lx = x + (c0 + .5) * m - L / 2, ly = y + (c0 + .5) * m - L / 2;
-    g.fillStyle = "#fff"; g.beginPath(); redondo(g, lx - .85 * m, ly - .85 * m, L + 1.7 * m, L + 1.7 * m, 1.4 * m); g.fill();
+    // Logo (chakana de 7×7) que llena todo el hueco de 9×9 módulos del centro, sin recuadro blanco.
+    // Probado con los lectores ZXing y OpenCV, también achicado a 1/4: se lee igual que con el recuadro.
+    var L = (2 * h + 1) * m, k = L / 7, lx = x + (c0 - h) * m, ly = y + (c0 - h) * m;
     for(var i = 0; i < 7; i++) for(var j = 0; j < 7; j++){
       var x1 = Math.round(lx + j * k), y1 = Math.round(ly + i * k);  // bordes redondeados a píxeles: sin líneas entre cuadros
       g.fillStyle = COLOR[LOGO[i].charAt(j)];
