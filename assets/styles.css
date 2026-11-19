@@ -695,3 +695,22 @@ ul,ol{list-style:none}
 @media (prefers-reduced-motion: reduce){.trk__ic.is-pop svg{animation:none}.bar span{transition:none}}
 
 @media (max-width:560px){.book__cover{aspect-ratio:auto;height:320px}}
+
+/* Biblioteca: portada roja (la campaña es la portada de la página) */
+.phero--camp{background:var(--red);padding:clamp(26px,3.5vw,44px) 0 clamp(52px,7vw,92px)}
+.phero--camp::before{opacity:.55}
+.phero--camp .crumbs{color:rgba(255,255,255,.85);margin-bottom:clamp(18px,3vw,32px)}
+.camp--hero{background:none;border-radius:0;padding:0;overflow:visible;gap:1.1rem}
+.camp--hero h1{font-size:clamp(34px,5.8vw,78px);font-weight:700;text-transform:uppercase;letter-spacing:-.02em;line-height:1.02;max-width:18ch}
+.phero--camp .camp p{max-width:none;margin-top:0;animation:none}
+.phero--camp .camp .camp__tag{color:#0A0A0A;font-size:.8125rem}
+.phero--camp .camp .camp__meta{color:#0A0A0A;font-size:clamp(44px,8vw,110px)}
+.phero--camp .camp .camp__sub{color:#fff;font-size:clamp(.875rem,1.4vw,1.0625rem)}
+.lead-c{max-width:62ch;margin:0 auto;text-align:center;font-size:clamp(1.125rem,1.6vw,1.3125rem);color:var(--muted)}
+.lead-c+.quote{margin-top:clamp(22px,3vw,36px)}
+
+/* Bazar: libros de la Biblioteca dentro del catálogo */
+.card__th--book{background:var(--soft);display:grid;place-items:center;padding:12px 0}
+.card__th--book .card__img{width:auto;height:100%;max-width:78%;object-fit:contain;border-radius:3px;box-shadow:0 14px 24px -14px rgba(0,0,0,.6)}
+.card:hover .card__th--book .card__img{transform:scale(1.04) rotate(-1deg)}
+a.add{display:inline-flex;align-items:center;text-decoration:none}

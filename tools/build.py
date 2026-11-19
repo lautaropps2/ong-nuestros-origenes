@@ -7,7 +7,7 @@ import pathlib
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 SRC = ROOT / "tools" / "pages"
-V = "20261118"  # cache-buster: súbelo en cada publicación
+V = "20261119"  # cache-buster: súbelo en cada publicación
 
 WA = "https://wa.me/56926175941"
 IG = "https://www.instagram.com/nuestrosorigenesong/"
@@ -40,15 +40,6 @@ PAGES = [
 
 NAV = [
     ("inicio", "index.html", "Inicio", []),
-    ("quienes", "quienes-somos.html", "Quiénes somos", [
-        ("quienes-somos.html#organizacion", "Nuestra organización"),
-        ("quienes-somos.html#mision", "Misión y marco"),
-        ("quienes-somos.html#pueblos", "Pueblos originarios"),
-    ]),
-    ("trabajo", "nuestro-trabajo.html", "Nuestro trabajo", [
-        ("nuestro-trabajo.html#que-hacemos", "Qué hacemos"),
-        ("nuestro-trabajo.html#proyectos", "Proyectos emblemáticos"),
-    ]),
     ("noticias", "noticias.html", "Noticias", []),
     ("galeria", "galeria.html", "Galería", []),
     ("apoyanos", "apoyanos.html", "Apóyanos", []),

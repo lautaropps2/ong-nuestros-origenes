@@ -430,7 +430,8 @@
       bazar:     { label:"Bazar Dign@",   color:"#E3120B", stamp:"#FFFFFF" },
       emporio:   { label:"Emporio",       color:"#F7D417", stamp:"#0A0A0A" },
       vivero:    { label:"Vivero urbano", color:"#00A651", stamp:"#FFFFFF" },
-      artesania: { label:"Artesanía",     color:"#0A0A0A", stamp:"#FFFFFF" }
+      artesania: { label:"Artesanía",     color:"#0A0A0A", stamp:"#FFFFFF" },
+      libros:    { label:"Libros · Navidad 2026", color:"#E3120B", stamp:"#FFFFFF" }
     };
     // Respaldo por si data/productos.json no se puede cargar.
     var FALLBACK = [
@@ -468,9 +469,25 @@
         })
         .catch(function(){ return FALLBACK; });
     }
-    loadProducts().then(function(PRODUCTS){ safe(function(){ initCart(PRODUCTS); }, "cart-init"); });
+    // Libros de la Biblioteca del Barrio (data/biblioteca.json): se muestran en el catálogo,
+    // pero se compran en biblioteca.html (cada libro con su QR), no en el carrito.
+    function loadBooks(){
+      if(!window.fetch || !$("#products")) return Promise.resolve([]);
+      return fetch("data/biblioteca.json", {cache:"no-store"})
+        .then(function(r){ if(!r.ok) throw new Error(r.status); return r.json(); })
+        .then(function(d){
+          return ((d && d.libros) || []).filter(function(x){ return x && x.titulo && x.disponible !== false; }).map(function(x){
+            var slug = slugify(x.titulo) || "libro";
+            return { id:"libro-" + slug, cat:"libros", name:String(x.titulo), book:true,
+                     desc:[x.autor, x.detalle].filter(Boolean).join(" · "),
+                     price:Math.max(0, parseInt(x.precio, 10) || 0), img:mediaPath(x.portada), href:"biblioteca.html?libro=" + slug };
+          });
+        })
+        .catch(function(){ return []; });
+    }
+    Promise.all([loadProducts(), loadBooks()]).then(function(r){ safe(function(){ initCart(r[0], r[1]); }, "cart-init"); });
 
-    function initCart(PRODUCTS){
+    function initCart(PRODUCTS, BOOKS){
     var byId = {}; PRODUCTS.forEach(function(p){ byId[p.id] = p; });
 
     var KEY = "no_cart", cart = {};
@@ -502,8 +519,16 @@
     if(grid && grid.children.length === 0 && !PRODUCTS.length){
       grid.innerHTML = '<li class="bazar-empty">Pronto agregaremos nuevos productos. Escríbenos por WhatsApp para consultar disponibilidad.</li>';
     } else if(grid && grid.children.length === 0){
-      grid.innerHTML = PRODUCTS.map(function(p, k){
+      grid.innerHTML = (BOOKS || []).concat(PRODUCTS).map(function(p, k){
         var c = CATS[p.cat];
+        if(p.book){
+          return '<li class="card rv" style="--d:' + ((k % 4) * 0.07) + 's" data-cat="libros">' +
+            '<div class="card__th card__th--book">' + (p.img ? '<img class="card__img" src="' + esc(p.img) + '" alt="Portada de ' + esc(p.name) + '" loading="lazy" decoding="async">' : '') +
+            '<span class="card__cat" style="--cc:' + c.color + '">' + esc(c.label) + '</span></div>' +
+            '<div class="card__b"><h3>' + esc(p.name) + '</h3><p>' + esc(p.desc) + '</p>' +
+            '<div class="card__f">' + (p.price ? '<span class="price">' + money(p.price) + '</span>' : '<span class="price price--soft">Valor por confirmar</span>') +
+            '<a class="add" href="' + esc(p.href) + '" aria-label="Comprar ' + esc(p.name) + ' en la Biblioteca del Barrio">Comprar</a></div></div></li>';
+        }
         var thumb = p.img
           ? '<img class="card__img" src="' + esc(p.img) + '" alt="' + esc(p.name) + '" loading="lazy" decoding="async">'
           : '<svg viewBox="0 0 100 70" aria-hidden="true" focusable="false"><rect width="100" height="70" fill="' + c.color + '"/>' +
@@ -535,7 +560,7 @@
       });
 
       grid.addEventListener("click", function(e){
-        var b = e.target.closest(".add"); if(!b) return;
+        var b = e.target.closest(".add[data-id]"); if(!b) return;
         var id = b.getAttribute("data-id");
         setQty(id, (cart[id] || 0) + 1);
         badges.forEach(function(x){ x.classList.remove("bump"); void x.offsetWidth; x.classList.add("bump"); });
@@ -618,8 +643,8 @@
   }, "cart");
   /* ---------- Biblioteca del Barrio: libros, compra con QR y seguimiento ---------- */
   // Libros y meta: data/biblioteca.json (editable en /admin → Biblioteca).
-  // Pedidos, estadísticas y seguimiento: planilla de Google (tools/biblioteca/pedidos.gs),
-  // cuya dirección va en data/sistema.json → pedidos_url.
+  // Pedidos, estadísticas y seguimiento: función api/pedidos.js (dirección en data/sistema.json → pedidos_url).
+  // El estado de cada libro se cambia en el panel: /admin/pedidos.
   safe(function(){
     var lista = $("#libros-lista"), trk = $("#trk"), camps = $$("[data-campana]");
     if(!lista && !trk && !camps.length) return;
@@ -631,6 +656,9 @@
     function swatch(name){ return COLORES[String(name).toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "")] || "#C9C7BF"; }
     function num(n){ try{ return Number(n).toLocaleString("es-CL"); }catch(e){ return String(n); } }
     function getJSON(url){ return fetch(url, {cache:"no-store"}).then(function(r){ if(!r.ok) throw new Error(r.status); return r.json(); }); }
+    // La API responde JSON también en los errores (p. ej. {ok:false, sinConfig:true} si aún no está conectada).
+    function apiJSON(url, opts){ return fetch(url, opts || {cache:"no-store"}).then(function(r){ return r.json(); }); }
+    function slug(s){ return String(s).normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, ""); }
     function trackLink(code){ return TRACK_URL + "?c=" + encodeURIComponent(code); }
     function fecha(iso){
       if(!iso) return "";
@@ -643,7 +671,7 @@
       getJSON("data/sistema.json").catch(function(){ return {}; })
     ]).then(function(r){
       var b = r[0] || {}, api = String((r[1] || {}).pedidos_url || "").trim();
-      var ok = /^https:\/\/script\.google\.com\/macros\/s\/[\w-]+\/exec$/.test(api) || (LOCAL && /^http:\/\/localhost:\d+\/$/.test(api));
+      var ok = /^\/api\/[\w-]+$/.test(api);
       var c = b.campana || {};
       return {
         api: ok ? api : "",
@@ -659,7 +687,10 @@
 
     function statsOf(d){
       if(!d.api) return Promise.resolve(null);
-      return getJSON(d.api + "?accion=estadisticas").then(function(s){ return s && s.ok ? s : null; }).catch(function(){ return null; });
+      return apiJSON(d.api + "?accion=estadisticas").then(function(s){
+        if(s && s.sinConfig) d.api = "";  // aún sin conectar: la compra va directo a WhatsApp
+        return s && s.ok ? s : null;
+      }).catch(function(){ return null; });
     }
     function paintStats(root, meta, s){
       $$("[data-meta]", root).forEach(function(el){ el.textContent = num(meta); });
@@ -678,7 +709,11 @@
     }
 
     data.then(function(d){
-      camps.forEach(function(el){ if(!d.campana.activa) el.closest("section").hidden = true; });
+      camps.forEach(function(el){
+        if(d.campana.activa) return;
+        if(el.hasAttribute("data-hero")) $$("[data-camp-x], [data-campana-prog]", el).forEach(function(x){ x.hidden = true; });
+        else el.closest("section").hidden = true;
+      });
       statsOf(d).then(function(s){ camps.forEach(function(el){ paintStats(el, d.campana.meta, s); }); });
       if(lista) safe(function(){ initLibros(d); }, "biblioteca-libros");
       if(trk) safe(function(){ initSeguimiento(d); }, "biblioteca-seguimiento");
@@ -743,7 +778,7 @@
       }).join("");
 
       var modal = $("#buy"), form = $("#buyForm"), done = $("#buyDone"), msg = $(".form__msg", form), send = $(".buy__send", form);
-      var cant = $("#b-cantidad"), cur = null, lastTrigger = null;
+      var cant = $("#b-cantidad"), cur = null, lastTrigger = null, openedAt = 0;
       for(var k = 1; k <= 10; k++) cant.insertAdjacentHTML("beforeend", '<option value="' + k + '">' + k + (k === 1 ? " libro" : " libros") + '</option>');
 
       function opts(id, name, values, withSwatch){
@@ -755,7 +790,7 @@
         }).join("");
       }
       function open(i, trigger){
-        cur = libros[i]; lastTrigger = trigger;
+        cur = libros[i]; lastTrigger = trigger; openedAt = Date.now();
         $("#buy-t").textContent = cur.titulo;
         $("#buy-by").textContent = cur.autor;
         $("#buy-price").textContent = cur.precio ? money(cur.precio) + " por libro" : "Valor por confirmar";
@@ -772,6 +807,12 @@
         if(lastTrigger && lastTrigger.focus) lastTrigger.focus();
       }
       lista.addEventListener("click", function(e){ var b = e.target.closest("[data-libro]"); if(b) open(+b.getAttribute("data-libro"), b); });
+      // Desde el Bazar: biblioteca.html?libro=<titulo-en-minusculas> abre directo la compra de ese libro
+      var pedido = new URLSearchParams(location.search).get("libro");
+      if(pedido){
+        var idx = -1; libros.forEach(function(l, i){ if(idx < 0 && slug(l.titulo) === pedido) idx = i; });
+        if(idx >= 0) setTimeout(function(){ open(idx, $('[data-libro="' + idx + '"]', lista)); }, 250);
+      }
       done.addEventListener("click", function(e){ var b = e.target.closest("[data-dl]"); if(b) downloadQR(b.getAttribute("data-dl"), b.getAttribute("data-t") || ""); });
       modal.addEventListener("click", function(e){ if(e.target === modal || e.target.closest("[data-close]")) close(); });
       document.addEventListener("keydown", function(e){
@@ -787,7 +828,7 @@
         var formato = (form.querySelector("input[name=formato]:checked") || {}).value || "";
         var p = { libro:cur.titulo, color:color, formato:formato, cantidad:parseInt(f.cantidad.value, 10) || 1,
                   nombre:f.nombre.value.trim(), correo:f.correo.value.trim(), telefono:f.telefono.value.trim(),
-                  comuna:f.comuna.value.trim(), dedicatoria:f.dedicatoria.value.trim(), web:f.web.value };
+                  comuna:f.comuna.value.trim(), dedicatoria:f.dedicatoria.value.trim(), web:f.web.value, t:Date.now() - openedAt };
         var err = cur.colores.length && !color ? ["Elige el color del libro.", form.querySelector("input[name=color]")]
           : cur.formatos.length && !formato ? ["Elige el formato.", form.querySelector("input[name=formato]")]
           : p.nombre.length < 2 ? ["Escribe tu nombre y apellido.", f.nombre]
@@ -797,16 +838,21 @@
         if(err){ msg.textContent = err[0]; err[1].focus(); return; }
         msg.textContent = "";
 
-        if(!d.api){  // sistema de pedidos aún sin conectar: se coordina por WhatsApp
+        function porWhatsApp(){  // sistema de pedidos aún sin conectar: se coordina por WhatsApp
           var t = "Hola, quiero comprar para la Campaña Navidad 2026:\n• " + p.cantidad + " x " + p.libro + (color ? " (" + color + ")" : "") +
             (formato ? " · " + formato : "") + "\nNombre: " + p.nombre + "\nCorreo: " + p.correo + "\nTeléfono: " + p.telefono;
           window.open(waLink(t), "_blank", "noopener");
-          return;
         }
+        if(!d.api){ porWhatsApp(); return; }
         send.disabled = true; send.textContent = "Registrando tu compra…";
-        fetch(d.api, { method:"POST", body:JSON.stringify(p) })
-          .then(function(r){ return r.json(); })
+        apiJSON(d.api, { method:"POST", body:JSON.stringify(p) })
           .then(function(res){
+            if(res && res.sinConfig){
+              d.api = ""; send.disabled = false; send.textContent = "Confirmar compra";
+              msg.innerHTML = 'Para terminar, <a href="#" data-wa>envíanos tu pedido por WhatsApp</a>.';
+              $("[data-wa]", msg).addEventListener("click", function(ev){ ev.preventDefault(); porWhatsApp(); });
+              return;
+            }
             if(!res || !res.ok) throw new Error((res && res.error) || "");
             if(!res.codigos || !res.codigos.length) throw new Error("");
             showDone(res, p);
@@ -828,7 +874,7 @@
           '<div class="done__ok"><svg aria-hidden="true"><use href="#i-check"/></svg></div>' +
           '<h2>¡Gracias, ' + esc(nombre) + '!</h2>' +
           '<p>Registramos ' + (codes.length === 1 ? "tu libro" : codes.length + " libros") + ' «' + esc(res.libro) + '»' + (res.color ? ' (' + esc(res.color) + ')' : '') +
-          '. Cada libro tiene su propio código QR: escanéalo para ver cuándo se compra, se envía y llega a la residencia. También te lo enviamos a <b>' + esc(p.correo) + '</b>.</p>' +
+          '. Cada libro tiene su propio código QR: escanéalo con el celular para ver cuándo se compra, se envía y llega a la residencia.</p>' +
           '<div class="qrs">' + codes.map(function(c){
             return '<div class="qr"><canvas data-qr="' + esc(c) + '" aria-label="Código QR del libro ' + esc(c) + '" role="img"></canvas><b>' + esc(c) + '</b>' +
               '<div class="qr__acts"><button type="button" data-dl="' + esc(c) + '" data-t="' + esc(res.libro) + '">Descargar QR</button>' +
@@ -840,7 +886,7 @@
           (pago.datos_transferencia ? '<p>' + esc(pago.datos_transferencia) + '</p>' : '') +
           '<div class="btns">' + (link ? '<a class="btn" href="' + esc(link) + '" target="_blank" rel="noopener">Pagar en línea</a>' : '') +
           '<a class="btn btn--wa" href="' + esc(wa) + '" target="_blank" rel="noopener"><svg aria-hidden="true"><use href="#wa"/></svg>Enviar por WhatsApp</a></div></div>' +
-          '<p>Tu libro suma a la meta cuando confirmemos el pago. Guarda tus códigos: también llegan a tu correo.</p>' +
+          '<p>Tu libro suma a la meta cuando confirmemos el pago. <b>Guarda tus códigos:</b> descarga cada QR o toma una captura de pantalla.</p>' +
           '<button class="btn btn--ghost" type="button" data-close>Cerrar</button>';
         $$("canvas[data-qr]", done).forEach(function(cv){ drawQR(cv, trackLink(cv.getAttribute("data-qr")), 6); });
         form.hidden = true; done.hidden = false; form.reset();
@@ -871,7 +917,8 @@
       if(!d.api){ notFound("El seguimiento estará disponible muy pronto"); return; }
       find.hidden = true; main.hidden = false;
       $("[data-trk-code]", main).textContent = code;
-      getJSON(d.api + "?accion=seguimiento&codigo=" + encodeURIComponent(code)).then(function(r){
+      apiJSON(d.api + "?accion=seguimiento&codigo=" + encodeURIComponent(code)).then(function(r){
+        if(r && r.sinConfig){ notFound("El seguimiento estará disponible muy pronto"); return; }
         if(!r || !r.ok){ notFound((r && r.error) || "No encontramos ese código"); statsOf(d).then(function(s){ paintStats(stats, d.campana.meta, s); }); return; }
         var est = r.estado, idx = ORDEN.indexOf(est);
         trk.setAttribute("data-estado", est);
