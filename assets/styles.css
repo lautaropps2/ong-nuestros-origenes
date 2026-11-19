@@ -716,23 +716,25 @@ ul,ol{list-style:none}
 .card:hover .card__th--book .card__img{transform:scale(1.04) rotate(-1deg)}
 a.add{display:inline-flex;align-items:center;text-decoration:none}
 
-/* ---------- Libro con varias tapas: una sobre otra y se barajan (assets/main.js → pilaHTML) ---------- */
+/* ---------- Libro con varias tapas: una sobre otra (assets/main.js → pilaHTML) ----------
+   Cada tapa tiene su lugar (--x, --y, --r). La que pasa adelante se aparta (--px, --py, --pr) y vuelve encima;
+   la de adelante se aparta hacia su lado y queda detrás. Duración = 780 ms en pilaMostrar (main.js). */
 .pila{position:relative;width:100%;height:100%;display:grid;place-items:center;cursor:pointer;-webkit-tap-highlight-color:transparent;user-select:none}
 .pila__b{grid-area:1/1;position:relative;z-index:1;height:94%;width:auto;max-width:64%;object-fit:contain;transform-origin:50% 85%;
-  filter:drop-shadow(0 16px 16px rgba(0,0,0,.22));transform:translate(-25%,-4%) rotate(-5deg) scale(.92);transition:transform .6s var(--ease)}
-.pila__b.is-front{z-index:2;transform:translate(21%,3%) rotate(2deg)}
-.pila__b.to-front{animation:pilaAdelante .9s var(--ease) both}
-.pila__b.to-back{animation:pilaAtras .9s var(--ease) both}
+  filter:drop-shadow(0 16px 16px rgba(0,0,0,.22));transform:translate(var(--x,0%),var(--y,0%)) rotate(var(--r,0deg)) scale(.92);transition:transform .6s var(--ease)}
+.pila__b.is-front{z-index:2;transform:translate(var(--x,0%),var(--y,0%)) rotate(var(--r,0deg)) scale(1)}
+.pila__b.to-front{animation:pilaAdelante .75s var(--ease) both}
+.pila__b.to-back{animation:pilaAtras .75s var(--ease) both}
 @keyframes pilaAdelante{
-  0%{transform:translate(-25%,-4%) rotate(-5deg) scale(.92);z-index:1}
-  45%{transform:translate(-42%,-7%) rotate(-8deg) scale(.95);z-index:1}
+  0%{transform:translate(var(--x),var(--y)) rotate(var(--r)) scale(.92);z-index:1}
+  45%{transform:translate(var(--px),var(--py)) rotate(var(--pr)) scale(.96);z-index:1}
   55%{z-index:3}
-  100%{transform:translate(21%,3%) rotate(2deg) scale(1);z-index:3}}
+  100%{transform:translate(var(--x),var(--y)) rotate(var(--r)) scale(1);z-index:3}}
 @keyframes pilaAtras{
-  0%{transform:translate(21%,3%) rotate(2deg) scale(1);z-index:2}
-  45%{transform:translate(42%,1%) rotate(7deg) scale(.95);z-index:2}
+  0%{transform:translate(var(--x),var(--y)) rotate(var(--r)) scale(1);z-index:2}
+  45%{transform:translate(var(--px),var(--py)) rotate(var(--pr)) scale(.95);z-index:2}
   55%{z-index:0}
-  100%{transform:translate(-25%,-4%) rotate(-5deg) scale(.92);z-index:0}}
+  100%{transform:translate(var(--x),var(--y)) rotate(var(--r)) scale(.92);z-index:0}}
 .pila__dots{position:absolute;left:50%;bottom:2px;z-index:4;transform:translateX(-50%);display:flex;gap:7px}
 .pila__dots i{width:9px;height:9px;border-radius:50%;background:var(--sw);box-shadow:0 0 0 2px #fff,0 0 0 3px rgba(0,0,0,.14);opacity:.5;transition:opacity .3s,transform .3s var(--ease)}
 .pila__dots i.on{opacity:1;transform:scale(1.25)}

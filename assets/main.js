@@ -22,8 +22,9 @@
   }
 
   /* ---------- Libros con varias tapas (p. ej. Amarillo y Rojo) ----------
-     Las tapas se ven una sobre otra; al pasar el cursor se barajan (primero la de la lista, luego la siguiente…)
-     y al salir vuelve adelante la última. En celulares, tocar la imagen cambia de tapa. */
+     Las tapas se ven una sobre otra, cada una en su lugar. Al pasar el cursor sobre una tapa (o sobre su puntito de color),
+     esa tapa pasa adelante; al salir de la tarjeta vuelve adelante la última de la lista.
+     En celulares, tocar una tapa la pasa adelante (tocar la de adelante muestra la siguiente). */
   var COLORES = { rojo:"#E3120B", amarillo:"#F7D417", verde:"#00A651", azul:"#1D5BD8", negro:"#0A0A0A", blanco:"#FFFFFF",
                   rosado:"#E91E78", naranjo:"#F28C28", morado:"#7B3FA0", celeste:"#5BC0EB", gris:"#9A9890" };
   function normal(s){ return String(s).toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim(); }
@@ -38,23 +39,41 @@
     return '<div class="pila" data-pila data-front="' + (n - 1) + '" role="img" aria-label="' +
         esc("Portada de " + titulo + (nombres.length ? ", en tapa " + nombres.join(" y ") : "")) + '">' +
       tapas.map(function(t, i){
-        return '<img class="pila__b' + (i === n - 1 ? ' is-front' : '') + '" src="' + esc(t.img) + '" alt="" data-color="' + esc(t.color) + '" decoding="async" draggable="false">';
+        // Lugar de cada tapa: la primera atrás a la izquierda, la última adelante a la derecha.
+        // (--px, --py, --pr): hacia dónde se aparta al barajarse.
+        var f = n > 1 ? i / (n - 1) : 1, x = -25 + 46 * f, y = -4 + 7 * f, r = -5 + 7 * f, izq = f < .5;
+        var pos = "--x:" + uno(x) + "%;--y:" + uno(y) + "%;--r:" + uno(r) + "deg;--px:" + uno(x + (izq ? -17 : 21)) + "%;--py:" +
+          uno(y - 3) + "%;--pr:" + uno(r + (izq ? -3 : 5)) + "deg";
+        return '<img class="pila__b' + (i === n - 1 ? ' is-front' : '') + '" style="' + pos + '" src="' + esc(t.img) + '" alt="" data-color="' + esc(t.color) + '" decoding="async" draggable="false">';
       }).join("") +
       '<span class="pila__dots" aria-hidden="true">' + tapas.map(function(t, i){
         return '<i' + (i === n - 1 ? ' class="on"' : '') + ' style="--sw:' + swatch(t.color) + '"></i>';
       }).join("") + '</span></div>';
   }
+  function uno(v){ return Math.round(v * 10) / 10; }
+  // Pasa adelante la tapa i. Si otra tapa se está moviendo, espera a que termine y muestra la última pedida
+  // (así, al mover el cursor rápido entre tapas, la animación no salta).
   function pilaMostrar(st, i, animar){
     var bs = $$(".pila__b", st);
-    if(!bs[i] || +st.getAttribute("data-front") === i) return;
+    if(!bs[i]) return;
+    st._quiero = i;
+    if(st._mueve || +st.getAttribute("data-front") === i) return;
     st.setAttribute("data-front", i);
+    var anim = animar && !reduce;
     bs.forEach(function(b, j){
       var era = b.classList.contains("is-front");
       b.classList.remove("to-front", "to-back");
       b.classList.toggle("is-front", j === i);
-      if(animar && !reduce && (j === i || era)){ void b.offsetWidth; b.classList.add(j === i ? "to-front" : "to-back"); }
+      if(anim && (j === i || era)){ void b.offsetWidth; b.classList.add(j === i ? "to-front" : "to-back"); }
     });
     $$(".pila__dots i", st).forEach(function(d, j){ d.classList.toggle("on", j === i); });
+    if(!anim) return;
+    st._mueve = true;
+    setTimeout(function(){  // misma duración que la animación en styles.css (.pila__b.to-front)
+      st._mueve = false;
+      bs.forEach(function(b){ b.classList.remove("to-front", "to-back"); });
+      if(st._quiero !== i) pilaMostrar(st, st._quiero, true);
+    }, 780);
   }
   function pilaColor(st, color){
     var bs = $$(".pila__b", st), k = -1;
@@ -65,19 +84,25 @@
     $$("[data-pila]", root).forEach(function(st){
       if(st.getAttribute("data-on")) return;
       st.setAttribute("data-on", "1");
-      var n = $$(".pila__b", st).length, t = null, zona = st.closest(".book, .card") || st;
+      var bs = $$(".pila__b", st), dots = $$(".pila__dots i", st), n = bs.length, tipo = "mouse", zona = st.closest(".book, .card") || st;
       if(n < 2) return;
-      function sig(){ pilaMostrar(st, (+st.getAttribute("data-front") + 1) % n, true); }
-      zona.addEventListener("pointerenter", function(e){
+      function indice(el){ var k = bs.indexOf(el); return k >= 0 ? k : dots.indexOf(el); }
+      // Cursor sobre una tapa (o su puntito): esa tapa pasa adelante
+      st.addEventListener("pointerover", function(e){
         if(e.pointerType !== "mouse" || st.hasAttribute("data-fija")) return;
-        clearInterval(t); pilaMostrar(st, 0, true); t = setInterval(sig, 1700);
+        var k = indice(e.target); if(k >= 0) pilaMostrar(st, k, true);
       });
       zona.addEventListener("pointerleave", function(e){
-        if(e.pointerType !== "mouse" || !t) return;
-        clearInterval(t); t = null; pilaMostrar(st, n - 1, true);
+        if(e.pointerType === "mouse" && !st.hasAttribute("data-fija")) pilaMostrar(st, n - 1, true);
       });
-      st.addEventListener("click", function(){ if(!t && !st.hasAttribute("data-fija")) sig(); });
-      st.addEventListener("animationend", function(e){ e.target.classList.remove("to-front", "to-back"); });
+      // Celulares: tocar una tapa (o su puntito) la pasa adelante; tocar la tapa de adelante muestra la siguiente
+      st.addEventListener("pointerdown", function(e){ tipo = e.pointerType; });
+      st.addEventListener("click", function(e){
+        if(tipo === "mouse" || st.hasAttribute("data-fija")) return;
+        var actual = st._quiero != null ? st._quiero : +st.getAttribute("data-front"), k = indice(e.target);
+        if(k >= 0 && (k !== actual || dots.indexOf(e.target) >= 0)) pilaMostrar(st, k, true);
+        else pilaMostrar(st, (actual + 1) % n, true);
+      });
     });
   }
 
