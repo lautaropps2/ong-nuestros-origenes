@@ -927,7 +927,7 @@
         var formato = (form.querySelector("input[name=formato]:checked") || {}).value || "";
         var p = { libro:cur.titulo, color:color, formato:formato, cantidad:cantVal(),
                   nombre:f.nombre.value.trim(), correo:f.correo.value.trim(), telefono:f.telefono.value.trim(),
-                  comuna:f.comuna.value.trim(), dedicatoria:f.dedicatoria.value.trim(), web:f.web.value, t:Date.now() - openedAt,
+                  comuna:f.comuna.value.trim(), web:f.web.value, t:Date.now() - openedAt,
                   terminos:$("#b-ok").checked };
         var err = cur.colores.length && !color ? ["Elige el color del libro.", form.querySelector("input[name=color]")]
           : cur.formatos.length && !formato ? ["Elige el formato.", form.querySelector("input[name=formato]")]
@@ -973,7 +973,7 @@
         var total = (res.valor || 0) * n, pago = d.pago || {}, uno = n === 1;
         var nombre = p.nombre.split(/\s+/)[0], libroTxt = "«" + res.libro + "»" + (res.color ? " (" + res.color + ")" : "");
         var wa = waLink("Hola, compré " + nLibros(n) + " " + libroTxt + " para la Campaña Navidad 2026. " +
-          "Mi nombre es " + p.nombre + ". Código de mi compra: " + code + ". Les envío el comprobante de pago.");
+          "Mi nombre es " + p.nombre + ". Código de mi compra: " + code + ". Gracias");
         var link = /^https:\/\//.test(pago.link || "") ? pago.link : "";
         done.innerHTML =
           '<div class="done__ok"><svg aria-hidden="true"><use href="#i-check"/></svg></div>' +
@@ -987,6 +987,8 @@
             '<a href="' + esc(trackLink(code)) + '" target="_blank" rel="noopener">Ver seguimiento</a></div></div></div>' +
           '<div class="pay"><h3>Completa tu compra</h3>' +
           '<p><b>Total: ' + esc(nLibros(n)) + ' · ' + (total ? money(total) : "valor por confirmar") + '</b></p>' +
+          '<p class="pay__aviso"><svg aria-hidden="true"><use href="#i-book"/></svg><span><b>Recuerda:</b> ' +
+            (uno ? 'el libro se debe pagar' : 'los libros se deben pagar') + ' en la página oficial del autor, con la dirección y el nombre de envío de <b>ONG Nuestros Orígenes</b>.</span></p>' +
           (pago.instrucciones ? '<p>' + esc(pago.instrucciones) + '</p>' : '') +
           (pago.datos_transferencia ? '<p>' + esc(pago.datos_transferencia) + '</p>' : '') +
           '<div class="btns">' + (link ? '<a class="btn" href="' + esc(link) + '" target="_blank" rel="noopener">Pagar en línea</a>' : '') +

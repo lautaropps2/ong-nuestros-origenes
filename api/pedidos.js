@@ -252,7 +252,6 @@ async function registrar(req, res) {
   const correo = limpiar(b.correo, 120).toLowerCase();
   const telefono = limpiar(b.telefono, 30);
   const comuna = limpiar(b.comuna, 60);
-  const dedicatoria = limpiarTexto(b.dedicatoria, 300);
   const cantidad = Number(b.cantidad);
   if (!Number.isInteger(cantidad) || cantidad < 1) return responder(res, 400, { ok: false, error: "Indica cuántos libros quieres comprar." });
   if (cantidad > MAX_POR_PEDIDO) return responder(res, 400, { ok: false, error: `Para más de ${MAX_POR_PEDIDO.toLocaleString("es-CL")} libros escríbenos por WhatsApp.` });
@@ -288,7 +287,7 @@ async function registrar(req, res) {
       const c = nuevoCodigo(new Set(pedidos.map((p) => p.codigo)));
       pedidos.push({
         codigo: c, creado, libro: String(libro.titulo), color, formato, cantidad, valor, // valor = precio de cada libro
-        nombre, correo, telefono, comuna, dedicatoria,
+        nombre, correo, telefono, comuna,
         estado: "Pendiente de pago", pago: "", envio: "", entrega: "",
         residencia: "", notas: "", actualizado: creado, por: "web",
         terminos: TERMINOS, // versión de los términos y condiciones que aceptó el comprador

@@ -457,11 +457,11 @@
     resumenLibro.push(filaR("TOTAL", "", total, true));
 
     // 2. Compras
-    var compras = [["Fecha y hora", "Código", "Libro", "Color", "Formato", "Cantidad de libros", "Valor c/u", "Total", "Nombre", "Correo", "Teléfono", "Comuna", "Dedicatoria", "Estado", "Pago confirmado", "Enviado", "Entregado", "Residencia / hogar", "Notas internas"]]
+    var compras = [["Fecha y hora", "Código", "Libro", "Color", "Formato", "Cantidad de libros", "Valor c/u", "Total", "Nombre", "Correo", "Teléfono", "Comuna", "Estado", "Pago confirmado", "Enviado", "Entregado", "Residencia / hogar", "Notas internas"]]
       .concat(lista.map(function (p) {
         var n = cant(p);
         return [dt(p.creado), p.codigo, p.libro, p.color || "", p.formato || "", mil(n), mil(p.valor), mil((p.valor || 0) * n), p.nombre, p.correo, p.telefono, p.comuna || "",
-          p.dedicatoria || "", p.estado, dt(p.pago), dt(p.envio), dt(p.entrega), p.residencia || "", p.notas || ""];
+          p.estado, dt(p.pago), dt(p.envio), dt(p.entrega), p.residencia || "", p.notas || ""];
       }));
 
     // 3. Resumen por día
@@ -475,7 +475,7 @@
 
     var blob = XLSX.libro([
       { nombre: "Resumen por libro", filas: resumenLibro, anchos: [40, 16, 17, 10, 16, 18, 11, 12, 14] },
-      { nombre: "Compras", filas: compras, anchos: [17, 16, 36, 10, 10, 12, 11, 12, 26, 30, 16, 16, 40, 18, 17, 17, 17, 26, 30] },
+      { nombre: "Compras", filas: compras, anchos: [17, 16, 36, 10, 10, 12, 11, 12, 26, 30, 16, 16, 18, 17, 17, 17, 26, 30] },
       { nombre: "Resumen por día", filas: resumenDia, anchos: [14, 10, 17, 16, 12, 12, 14] }
     ]);
     var hoy = diaClave(Date.now());
